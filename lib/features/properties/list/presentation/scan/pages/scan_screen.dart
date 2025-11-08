@@ -405,10 +405,12 @@ class _PropertyScanPageState extends State<PropertyScanPage>
                 icon: Icons.photo_library,
                 label: 'Desde Foto',
                 onPressed: _scanFromPhoto,
+                circular: true,
+                disabled: true,
               ),
               ActionButton(
                 icon: Icons.restart_alt_rounded,
-                circular: true, // ← CORREGIDO
+                circular: true,
                 onPressed: _resetScanner,
               ),
             ],

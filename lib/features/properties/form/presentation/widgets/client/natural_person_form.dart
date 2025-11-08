@@ -33,54 +33,49 @@ class NaturalPersonForm extends StatefulWidget {
 }
 
 class _NaturalPersonFormState extends State<NaturalPersonForm> {
-  // Copias locales para forzar rebuild
   late List<TextEditingController> _emails;
   late List<TextEditingController> _phones;
 
   @override
   void initState() {
     super.initState();
-    _emails = widget.emails;
-    _phones = widget.phones;
+    _emails = List.from(widget.emails);
+    _phones = List.from(widget.phones);
 
-    // Forzar rebuild después del primer frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _emails = widget.emails;
-          _phones = widget.phones;
-        });
-      }
-    });
+    // Asegurar al menos un campo vacío si no hay
+    _ensureMinimumFields();
   }
 
   @override
   void didUpdateWidget(covariant NaturalPersonForm oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Si cambian las listas (desde el padre), actualizamos
-    final emailsChanged =
-        oldWidget.emails.length != widget.emails.length ||
-        oldWidget.emails != widget.emails;
-
-    final phonesChanged =
-        oldWidget.phones.length != widget.phones.length ||
-        oldWidget.phones != widget.phones;
+    final emailsChanged = !_listsEqual(oldWidget.emails, widget.emails);
+    final phonesChanged = !_listsEqual(oldWidget.phones, widget.phones);
 
     if (emailsChanged || phonesChanged) {
-      if (mounted) {
-        setState(() {
-          _emails = widget.emails;
-          _phones = widget.phones;
-        });
-      }
+      setState(() {
+        _emails = List.from(widget.emails);
+        _phones = List.from(widget.phones);
+        _ensureMinimumFields();
+      });
     }
   }
 
-  @override
-  void dispose() {
-    // No hacemos dispose aquí porque los controladores son del padre
-    super.dispose();
+  void _ensureMinimumFields() {
+    if (_emails.isEmpty) _emails.add(TextEditingController());
+    if (_phones.isEmpty) _phones.add(TextEditingController());
+  }
+
+  bool _listsEqual(
+    List<TextEditingController> a,
+    List<TextEditingController> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   @override
@@ -96,17 +91,20 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
                 controller: widget.firstNameCtrl,
                 label: 'Nombres',
                 icon: Icons.person_outline,
+                isRequired: true,
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 controller: widget.lastNameCtrl,
                 label: 'Apellidos',
                 icon: Icons.person,
+                isRequired: true,
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 controller: widget.addressCtrl,
                 label: 'Dirección',
+                isRequired: true,
                 icon: Icons.home,
               ),
               const SizedBox(height: 16),
@@ -118,6 +116,7 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
                       label: 'Cédula / Pasaporte',
                       icon: Icons.badge,
                       keyboardType: TextInputType.number,
+                      isRequired: true,
                       validator: numberValidator,
                     ),
                   ),
@@ -127,8 +126,9 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
                       controller: widget.dobCtrl,
                       label: 'Fecha de Nacimiento',
                       icon: Icons.cake,
-                      readOnly: true,
                       onTap: widget.onSelectDate,
+                      readOnly: true,
+                      isRequired: true,
                     ),
                   ),
                 ],
@@ -139,31 +139,35 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
 
         context.vSpace(0.03),
 
-        // Correos
+        // Correos (NO requeridos)
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 250),
           child: DynamicFieldList(
-            key: ValueKey('emails_${_emails.length}'),
+            key: ValueKey('emails_${_emails.hashCode}'),
             title: 'Correos Electrónicos',
             controllers: _emails,
             hint: 'email@dominio.com',
             icon: Icons.email,
+            keyboardType: TextInputType.emailAddress,
+            validator: emailValidator,
+            required: false,
           ),
         ),
 
         context.vSpace(0.03),
 
-        // Teléfonos
+        // Teléfonos (SÍ requeridos)
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 250),
           child: DynamicFieldList(
-            key: ValueKey('phones_${_phones.length}'),
+            key: ValueKey('phones_${_phones.hashCode}'),
             title: 'Teléfonos',
             controllers: _phones,
             hint: '+593 99 999 9999',
             icon: Icons.phone,
             keyboardType: TextInputType.phone,
             validator: phoneValidator,
+            required: true, // ← Requerido
           ),
         ),
       ],

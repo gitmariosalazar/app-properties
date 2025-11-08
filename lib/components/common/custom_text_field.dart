@@ -18,8 +18,6 @@ class CustomTextField extends StatefulWidget {
   final EdgeInsets? contentPadding;
   final int? minLines;
   final int? maxLines;
-
-  // NUEVO: Para activar modo textarea
   final bool isTextArea;
 
   const CustomTextField({
@@ -37,7 +35,7 @@ class CustomTextField extends StatefulWidget {
     this.contentPadding,
     this.minLines,
     this.maxLines,
-    this.isTextArea = false, // ← Default: false
+    this.isTextArea = false,
   });
 
   @override
@@ -53,15 +51,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     super.initState();
     _controller = widget.controller;
     _fieldKey = GlobalKey<FormFieldState>();
-    _addListener();
-  }
-
-  void _addListener() {
     _controller.addListener(_onTextChanged);
-  }
-
-  void _removeListener() {
-    _controller.removeListener(_onTextChanged);
   }
 
   void _onTextChanged() {
@@ -75,21 +65,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void didUpdateWidget(covariant CustomTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      _removeListener();
+      oldWidget.controller.removeListener(_onTextChanged);
       _controller = widget.controller;
-      _addListener();
+      _controller.addListener(_onTextChanged);
     }
   }
 
   @override
   void dispose() {
-    _removeListener();
+    _controller.removeListener(_onTextChanged);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Si es textarea → 4 líneas mínimas, expandable
     final int minLines = widget.isTextArea ? 3 : (widget.minLines ?? 1);
     final int maxLines = widget.isTextArea ? 5 : (widget.maxLines ?? 1);
 
@@ -107,16 +96,19 @@ class _CustomTextFieldState extends State<CustomTextField> {
         inputFormatters: widget.inputFormatters,
         minLines: minLines,
         maxLines: maxLines,
-        style: context.bodyMedium.copyWith(
+        style: TextStyle(
+          fontSize: 11, // Tamaño de texto del input (pequeño y claro)
           fontWeight: FontWeight.w500,
-          height: 1.4,
+          height: 1.3,
+          color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           label: widget.isRequired
               ? _buildRequiredLabel(context)
               : _buildLabel(context),
           hintText: widget.isRequired ? null : widget.label,
-          hintStyle: context.bodySmall.copyWith(
+          hintStyle: TextStyle(
+            fontSize: 11,
             color: AppColors.textSecondary.withOpacity(0.6),
             fontWeight: FontWeight.w400,
           ),
@@ -131,19 +123,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
           fillColor: widget.readOnly
               ? AppColors.surface.withOpacity(0.2)
               : AppColors.surface.withOpacity(0.4),
-          border: _buildBorder(context, AppColors.primary.withOpacity(0.5)),
-          enabledBorder: _buildBorder(
-            context,
-            AppColors.primary.withOpacity(0.3),
-          ),
-          focusedBorder: _buildBorder(context, AppColors.primary, width: 1.5),
-          errorBorder: _buildBorder(context, AppColors.error, width: 1.5),
+          border: _buildBorder(AppColors.primary.withOpacity(0.5)),
+          enabledBorder: _buildBorder(AppColors.primary.withOpacity(0.3)),
+          focusedBorder: _buildBorder(AppColors.primary, width: 1.5),
+          errorBorder: _buildBorder(AppColors.error, width: 1.5),
           isDense: true,
           contentPadding: widget.isTextArea
               ? const EdgeInsets.symmetric(horizontal: 12, vertical: 16)
               : (widget.contentPadding ??
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
-          errorStyle: context.bodySmall.copyWith(
+          errorStyle: const TextStyle(
+            fontSize: 11,
             color: AppColors.error,
             fontWeight: FontWeight.w500,
             height: 1.0,
@@ -156,7 +146,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             if (error != null) return error;
           }
           if (widget.isRequired && (value == null || value.trim().isEmpty)) {
-            return 'Requerido';
+            return 'Este campo es obligatorio';
           }
           return null;
         },
@@ -168,7 +158,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return RichText(
       text: TextSpan(
         text: widget.label,
-        style: context.bodySmall.copyWith(
+        style: const TextStyle(
+          fontSize: 11,
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w500,
         ),
@@ -185,18 +176,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget _buildLabel(BuildContext context) {
     return Text(
       widget.label,
-      style: context.bodySmall.copyWith(
+      style: const TextStyle(
+        fontSize: 11,
         color: AppColors.textSecondary,
         fontWeight: FontWeight.w500,
       ),
     );
   }
 
-  OutlineInputBorder _buildBorder(
-    BuildContext context,
-    Color color, {
-    double width = 1.0,
-  }) {
+  OutlineInputBorder _buildBorder(Color color, {double width = 1.0}) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
       borderSide: BorderSide(color: color, width: width),

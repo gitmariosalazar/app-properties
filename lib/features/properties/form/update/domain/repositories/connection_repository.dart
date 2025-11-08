@@ -25,7 +25,7 @@ class UpdateConnectionParams {
   final double connectionPrecision;
   final String connectionGeolocationDate;
   final String connectionGeometricZone;
-  final String propertyCadastralKey;
+  final String? propertyCadastralKey;
   final int zoneId;
 
   UpdateConnectionParams({
@@ -48,7 +48,7 @@ class UpdateConnectionParams {
     this.connectionPrecision = 0.0,
     String? connectionGeolocationDate,
     this.connectionGeometricZone = '',
-    required this.propertyCadastralKey,
+    this.propertyCadastralKey,
     this.zoneId = 0,
   }) : connectionGeolocationDate =
            connectionGeolocationDate ?? DateTime.now().toIso8601String();

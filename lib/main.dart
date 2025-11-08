@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:app_properties/features/form/presentation/blocs/photo-readings/photo_reading_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_properties/core/di/injection.dart' as di;
 import 'package:app_properties/core/router/app_router.dart';
+import 'package:app_properties/config/environments/environment.dart';
 import 'package:app_properties/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// 1. Declara el RouteObserver global para la app.
+// 1. RouteObserver global
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 
+// 2. Determina el flavor desde --dart-define
+const String _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+
+  // 3. Carga el entorno correcto (API_URL desde assets/.env)
+  final envType = _flavor == 'dev' ? EnvironmentType.dev : EnvironmentType.prod;
+  await Environment.init(env: envType);
+
+  // 4. Solo en dev: imprime config
+  if (_flavor == 'dev') {
+    Environment.printConfig();
+  }
+
+  // 5. Inyección de dependencias
   await di.init();
+
+  // 6. Ejecuta la app
   runApp(const MyApp());
 }
 
@@ -23,13 +37,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => di.sl<AuthBloc>()),
-        BlocProvider(create: (_) => di.sl<PhotoReadingBloc>()),
-        // Add other blocs as needed
-      ],
+      providers: [BlocProvider(create: (_) => di.sl<AuthBloc>())],
       child: MaterialApp.router(
         title: 'Scan App',
+        debugShowCheckedModeBanner: _flavor == 'dev', // Solo en dev
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,

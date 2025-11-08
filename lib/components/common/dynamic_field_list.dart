@@ -1,7 +1,7 @@
 // lib/core/components/common/dynamic_field_list.dart
 import 'package:app_properties/components/common/compact_add_button.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/components/common/form_card.dart';
+import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 import 'custom_text_field.dart';
@@ -13,6 +13,7 @@ class DynamicFieldList extends StatefulWidget {
   final IconData icon;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
+  final bool required;
 
   const DynamicFieldList({
     super.key,
@@ -22,6 +23,7 @@ class DynamicFieldList extends StatefulWidget {
     required this.icon,
     this.keyboardType,
     this.validator,
+    this.required = true,
   });
 
   @override
@@ -29,23 +31,33 @@ class DynamicFieldList extends StatefulWidget {
 }
 
 class _DynamicFieldListState extends State<DynamicFieldList> {
-  final List<GlobalKey<FormFieldState>> _fieldKeys = [];
+  late List<GlobalKey<FormFieldState>> _fieldKeys;
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
+    _fieldKeys = [];
+    _syncControllers();
   }
 
-  void _initializeControllers() {
+  @override
+  void didUpdateWidget(covariant DynamicFieldList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controllers != widget.controllers ||
+        oldWidget.controllers.length != widget.controllers.length) {
+      _syncControllers();
+    }
+  }
+
+  void _syncControllers() {
+    _fieldKeys = List.generate(
+      widget.controllers.length,
+      (_) => GlobalKey<FormFieldState>(),
+    );
+    // Asegurar al menos un campo
     if (widget.controllers.isEmpty) {
       widget.controllers.add(TextEditingController());
-    }
-
-    _fieldKeys.clear();
-    for (var i = 0; i < widget.controllers.length; i++) {
-      final key = GlobalKey<FormFieldState>();
-      _fieldKeys.add(key);
+      _fieldKeys.add(GlobalKey<FormFieldState>());
     }
   }
 
@@ -57,18 +69,11 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
   }
 
   void _removeField(int index) {
-    if (widget.controllers.length > 1) {
-      setState(() {
-        widget.controllers.removeAt(index);
-        _fieldKeys.removeAt(index);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    // NO HAGAS NADA AQUÍ
-    super.dispose();
+    if (widget.controllers.length <= 1) return; // Nunca eliminar el último
+    setState(() {
+      widget.controllers.removeAt(index);
+      _fieldKeys.removeAt(index);
+    });
   }
 
   @override
@@ -104,31 +109,30 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
 
           ...widget.controllers.asMap().entries.map((entry) {
             final index = entry.key;
-            final ctrl = entry.value;
+            final controller = entry.value;
             final fieldKey = _fieldKeys[index];
 
             return Padding(
-              key: ValueKey('field_$index'),
+              key: ValueKey('dynamic_field_$index'),
               padding: EdgeInsets.only(bottom: context.smallSpacing * 2.7),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: CustomTextField(
                       key: fieldKey,
-                      controller: ctrl,
+                      controller: controller,
                       label: widget.hint,
                       icon: widget.icon,
                       keyboardType: widget.keyboardType,
                       validator: widget.validator,
-                      isRequired: false,
+                      isRequired:
+                          widget.required &&
+                          index == 0, // Solo el primero es requerido si aplica
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 8,
                       ),
-                      minLines: 1,
-                      maxLines: 1,
                     ),
                   ),
                   if (widget.controllers.length > 1)
@@ -155,7 +159,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                 ],
               ),
             );
-          }),
+          }).toList(),
         ],
       ),
     );

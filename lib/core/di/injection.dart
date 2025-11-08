@@ -8,23 +8,6 @@ import 'package:app_properties/features/auth/domain/repositories/auth_repository
 import 'package:app_properties/features/auth/domain/usecases/login_usecase.dart';
 import 'package:app_properties/features/auth/presentation/bloc/auth_bloc.dart';
 
-// === SCAN ===
-import 'package:app_properties/features/scan/data/datasources/scan_datasource.dart';
-import 'package:app_properties/features/scan/data/repositories/scan_repository_impl.dart';
-import 'package:app_properties/features/scan/domain/repositories/scan_repository.dart';
-import 'package:app_properties/features/scan/domain/usecases/scan_usecase.dart';
-import 'package:app_properties/features/scan/presentation/bloc/scan_bloc.dart';
-
-// === FORM ===
-import 'package:app_properties/features/form/presentation/blocs/readings/form_bloc.dart';
-
-// === MANUALLY ===
-import 'package:app_properties/features/manually/data/datasources/manually_datasource.dart';
-import 'package:app_properties/features/manually/data/repositories/manually_repository_impl.dart';
-import 'package:app_properties/features/manually/domain/repositories/manually_repository.dart';
-import 'package:app_properties/features/manually/domain/usecases/manually_usecase.dart';
-import 'package:app_properties/features/manually/presentation/bloc/manually_bloc.dart';
-
 // === OBSERVATIONS ===
 import 'package:app_properties/features/observations/data/datasources/observations_datasource.dart';
 import 'package:app_properties/features/observations/data/repositories/observation_repository_impl.dart';
@@ -32,13 +15,6 @@ import 'package:app_properties/features/observations/domain/repositories/observa
 import 'package:app_properties/features/observations/domain/usecases/get_observations_usecase.dart.dart';
 import 'package:app_properties/features/observations/domain/usecases/get_observations_by_cadasralkey_usecase.dart';
 import 'package:app_properties/features/observations/presentation/bloc/observation_bloc.dart';
-
-// === PHOTO READING ===
-import 'package:app_properties/features/form/data/datasources/photo_reading_datasource.dart';
-import 'package:app_properties/features/form/data/repositories/photo_reading_repository_impl.dart';
-import 'package:app_properties/features/form/domain/repositories/photo_reading_repository.dart';
-import 'package:app_properties/features/form/domain/usecases/create_photo_reading_use_case.dart';
-import 'package:app_properties/features/form/presentation/blocs/photo-readings/photo_reading_bloc.dart';
 
 // === CONNECTION WITH PROPERTIES (CRÍTICO) ===
 import 'package:app_properties/features/properties/list/data/datasources/remote_connection_with_properties_datasource.dart';
@@ -76,27 +52,14 @@ Future<void> init() async {
   // ====================
   // SCAN
   // ====================
-  sl.registerLazySingleton<ScanDataSource>(() => ScanDataSourceImpl());
-  sl.registerLazySingleton<ScanRepository>(
-    () => ScanRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<ScanUseCase>(() => ScanUseCase(sl()));
-  sl.registerFactory(() => ScanBloc(scanUseCase: sl()));
 
   // ====================
   // FORM
   // ====================
-  sl.registerFactory(() => FormBloc());
 
   // ====================
   // MANUALLY
   // ====================
-  sl.registerLazySingleton<ManuallyDataSource>(() => ManuallyDataSourceImpl());
-  sl.registerLazySingleton<ManuallyRepository>(
-    () => ManuallyRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<ManuallyUseCase>(() => ManuallyUseCase(sl()));
-  sl.registerFactory(() => ManuallyBloc(sl()));
   sl.registerFactory(() => ManuallyConnectionWithPropertiesBloc(sl()));
 
   // ====================
@@ -124,17 +87,6 @@ Future<void> init() async {
   // ====================
   // PHOTO READING
   // ====================
-  sl.registerLazySingleton<PhotoReadingDataSource>(
-    () => PhotoReadingDataSource(),
-  );
-  sl.registerLazySingleton<PhotoReadingRepository>(
-    () => PhotoReadingRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<CreatePhotoReadingUseCase>(
-    () => CreatePhotoReadingUseCase(sl()),
-  );
-  sl.registerFactory(() => PhotoReadingBloc(sl()));
-
   // ====================
   // CONNECTION WITH PROPERTIES (CORREGIDO)
   // ====================

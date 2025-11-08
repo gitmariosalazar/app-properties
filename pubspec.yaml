@@ -52,7 +52,8 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/Roboto-Regular.ttf
-    - .env
+    - assets/.env
+    - assets/.env.dev
   fonts:
     - family: Roboto
       fonts:

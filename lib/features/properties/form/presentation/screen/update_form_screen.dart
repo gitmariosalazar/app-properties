@@ -1,72 +1,48 @@
-// 📦 Flutter SDK
+// lib/features/properties/form/update/presentation/screens/update_connection_form_screen.dart
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-
-// 🌍 Paquetes externos
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-
-// 🎨 Temas y estilos
 import 'package:app_properties/core/theme/app_colors.dart';
-
-// 🧩 Componentes comunes
-import 'package:app_properties/components/button/action_button.dart';
+import 'package:app_properties/components/button/widget_button.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/common/form_card.dart';
-
-// 🧠 Utilidades
 import 'package:app_properties/utils/date_utils.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:app_properties/utils/validators.dart';
-
-// 🏠 Features → Properties → Get
 import 'package:app_properties/features/properties/list/domain/entities/connection.dart';
-
-// 🏗️ Features → Properties → Put → Data → Datasources
 import 'package:app_properties/features/properties/form/update/data/datasources/company_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/connection_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/customer_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/property_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/observation_connection_remote_data_source.dart';
-
-// 🧱 Features → Properties → Put → Data → Repositories
 import 'package:app_properties/features/properties/form/update/data/repositories/company_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/connection_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/customer_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/property_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/observation_connection_repository_impl.dart';
-
-// 🧩 Features → Properties → Put → Domain → Repositories
 import 'package:app_properties/features/properties/form/update/domain/repositories/company_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/customer_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/property_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/observation_connection_repository.dart';
-
-// ⚙️ Features → Properties → Put → Domain → UseCases
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_company.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_connection.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_customer.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_property.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/add_observation_connection.dart';
-
-// 🗺️ Features → Properties → Put → Presentation → Screens
 import 'package:app_properties/features/properties/form/presentation/screen/map_picker_screen.dart';
-
-// 🧾 Features → Properties → Put → Presentation → Widgets → Client
 import 'package:app_properties/features/properties/form/presentation/widgets/client/company_form.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/client/natural_person_form.dart';
-
-// ⚡ Features → Properties → Put → Presentation → Widgets → Connection
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/gps_section.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
-
-// 🏡 Features → Properties → Put → Presentation → Widgets → Property
 import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
+
+import 'package:app_properties/components/common/custom_overlay_snack_bar.dart';
 
 class UpdateConnectionFormScreen extends StatefulWidget {
   final ConnectionEntity connection;
@@ -161,9 +137,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
   bool _sewerage = true;
   bool _status = true;
-  final _zoneIdCtrl = TextEditingController();
-  final _zoneCodeCtrl = TextEditingController();
-  final _zoneNameCtrl = TextEditingController();
 
   // Predio
   final _propertyCadastralKeyCtrl = TextEditingController();
@@ -201,6 +174,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     'ZONA 4',
     'ZONA NO ASIGNADA',
   ];
+
+  // Estado de errores por paso
+  List<String?> _stepErrors = [null, null, null];
 
   @override
   void initState() {
@@ -278,13 +254,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       _observationDetailsCtrl,
       _observationConnectionIdCtrl,
       _observationTitleCtrl,
-      _zoneIdCtrl,
-      _zoneCodeCtrl,
-      _zoneNameCtrl,
     ];
-    for (var c in controllers) {
-      c.dispose();
-    }
+    for (var c in controllers) c.dispose();
     super.dispose();
   }
 
@@ -294,7 +265,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     _isNaturalPerson = conn.person != null;
     _isCompany = conn.company != null;
 
-    // Persona Natural
     if (_isNaturalPerson && conn.person != null) {
       final p = conn.person!;
       _firstNameCtrl.text = p.firstName ?? '';
@@ -311,19 +281,16 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
       _emailsNatural.clear();
       _phonesNatural.clear();
-      for (var e in p.emails) {
+      for (var e in p.emails)
         if (e?.email != null)
           _emailsNatural.add(TextEditingController(text: e!.email));
-      }
-      for (var p in p.phones) {
+      for (var p in p.phones)
         if (p?.numero != null)
           _phonesNatural.add(TextEditingController(text: p!.numero));
-      }
       if (_emailsNatural.isEmpty) _emailsNatural.add(TextEditingController());
       if (_phonesNatural.isEmpty) _phonesNatural.add(TextEditingController());
     }
 
-    // Empresa
     if (_isCompany && conn.company != null) {
       final c = conn.company!;
       _companyNameCtrl.text = c.businessName ?? '';
@@ -335,24 +302,24 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
       _emailsCompany.clear();
       _phonesCompany.clear();
-      for (var e in c.emails) {
+      for (var e in c.emails)
         if (e?.email != null)
           _emailsCompany.add(TextEditingController(text: e!.email));
-      }
-      for (var p in c.phones) {
+      for (var p in c.phones)
         if (p?.numero != null)
           _phonesCompany.add(TextEditingController(text: p!.numero));
-      }
       if (_emailsCompany.isEmpty) _emailsCompany.add(TextEditingController());
       if (_phonesCompany.isEmpty) _phonesCompany.add(TextEditingController());
     }
 
-    // Acometida
     _cadastralKeyCtrl.text = conn.connectionCadastralKey ?? '';
     _meterNumberCtrl.text = conn.connectionMeterNumber ?? '';
     _contractNumberCtrl.text = conn.connectionContractNumber ?? '';
     _connectionAddressCtrl.text = conn.connectionAddress;
     _installationDateCtrl.text = conn.connectionInstallationDate ?? '';
+    _geolocationDateCtrl.text =
+        conn.connectionGeolocationDate?.toIso8601String() ?? '';
+
     _peopleNumberCtrl.text = conn.connectionPeopleNumber?.toString() ?? '4';
     _referenceCtrl.text = conn.connectionReference ?? '';
     _sectorCtrl.text = conn.connectionSector?.toString() ?? '';
@@ -360,34 +327,17 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     _zoneCtrl.text = conn.connectionZone?.toString() ?? '';
     _sewerage = conn.connectionSewerage ?? true;
     _status = conn.connectionStatus ?? true;
-    _zoneIdCtrl.text = conn.zoneId?.toString() ?? '';
-    _zoneCodeCtrl.text = conn.zoneCode ?? '';
-    _zoneNameCtrl.text = conn.zoneName ?? 'ZONA 1';
 
-    // Normalizar tarifa y zona
     _rateName =
         _normalizeValue(conn.connectionRateName, _validRates) ?? 'COMERCIAL';
     _zoneName = _normalizeValue(conn.zoneName, _validZones) ?? 'ZONA 1';
 
-    // Coordenadas
     if (conn.connectionCoordinates?.isNotEmpty == true) {
       final coords = conn.connectionCoordinates!;
       if (coords.contains(',')) {
         final parts = coords.split(',');
         _latitudeCtrl.text = parts[0].trim();
         _longitudeCtrl.text = parts[1].trim();
-      } else if (coords.startsWith('0101000020')) {
-        try {
-          final hex = coords.substring(10);
-          final bytes = hexToBytes(hex);
-          final lng = bytesToDouble(bytes, 0, littleEndian: true);
-          final lat = bytesToDouble(bytes, 8, littleEndian: true);
-          _latitudeCtrl.text = lat.toStringAsFixed(8);
-          _longitudeCtrl.text = lng.toStringAsFixed(8);
-        } catch (e) {
-          _latitudeCtrl.text = '-0.180653';
-          _longitudeCtrl.text = '-78.467834';
-        }
       } else {
         _latitudeCtrl.text = '-0.180653';
         _longitudeCtrl.text = '-78.467834';
@@ -405,17 +355,13 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         DateTime.now().toIso8601String();
     _geometricZoneCtrl.text = conn.connectionGeometricZone ?? '';
 
-    // Predio
     final firstProp = conn.properties?.isNotEmpty == true
         ? conn.properties!.first
         : null;
-    _propertyCadastralKeyCtrl.text =
-        firstProp?.propertyCadastralKey ?? conn.connectionCadastralKey ?? '';
-    _propertyAddressCtrl.text =
-        firstProp?.propertyAddress ?? conn.connectionAddress;
-    _alleywayCtrl.text = firstProp?.propertyAlleyway ?? '';
+    _propertyCadastralKeyCtrl.text = firstProp?.propertyCadastralKey ?? 'N/A';
+    _propertyAddressCtrl.text = firstProp?.propertyAddress ?? 'N/A';
+    _alleywayCtrl.text = firstProp?.propertyAlleyway ?? 'N/A';
 
-    // Observación
     _observationConnectionIdCtrl.text = conn.connectionId;
     _observationTitleCtrl.text = 'Actualización de Acometida y Predio';
     _observationDetailsCtrl.text = '';
@@ -427,27 +373,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     return validList.contains(normalized) ? normalized : null;
   }
 
-  List<int> hexToBytes(String hex) {
-    final bytes = <int>[];
-    for (int i = 0; i < hex.length; i += 2) {
-      bytes.add(int.parse(hex.substring(i, i + 2), radix: 16));
-    }
-    return bytes;
-  }
-
-  double bytesToDouble(
-    List<int> bytes,
-    int offset, {
-    bool littleEndian = true,
-  }) {
-    final byteData = ByteData(8);
-    for (int i = 0; i < 8; i++) {
-      byteData.setUint8(i, bytes[offset + (littleEndian ? i : 7 - i)]);
-    }
-    return byteData.getFloat64(0, littleEndian ? Endian.little : Endian.big);
-  }
-
-  // Métodos Auxiliares
   Future<void> _selectDate(TextEditingController controller) async {
     if (_isDatePickerActive) return;
     _isDatePickerActive = true;
@@ -482,23 +407,17 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     setState(() => _isGettingLocation = true);
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return _showSnackBar(
-          'El servicio de ubicación está desactivado.',
-          error: true,
-        );
-      }
+      if (!serviceEnabled)
+        return _showErrorSnackBar('Servicio de ubicación desactivado.');
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return _showSnackBar('Permiso de ubicación denegado.', error: true);
-        }
+        if (permission == LocationPermission.denied)
+          return _showErrorSnackBar('Permiso denegado.');
       }
-      if (permission == LocationPermission.deniedForever) {
-        return _showSnackBar('Permiso denegado permanentemente.', error: true);
-      }
+      if (permission == LocationPermission.deniedForever)
+        return _showErrorSnackBar('Permiso denegado permanentemente.');
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -530,7 +449,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
       );
     } catch (e) {
-      _showSnackBar('Error al obtener ubicación: $e', error: true);
+      _showErrorSnackBar('Error al obtener ubicación: $e');
     } finally {
       if (mounted) setState(() => _isGettingLocation = false);
     }
@@ -556,7 +475,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         });
       }
     } catch (e) {
-      _showSnackBar('Error al obtener dirección.', error: true);
+      _showErrorSnackBar('Error al obtener dirección.');
     }
   }
 
@@ -580,23 +499,33 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
           },
         ),
       ),
-    ).then((_) {
-      final updatedLat = double.tryParse(_latitudeCtrl.text) ?? -0.180653;
-      final updatedLng = double.tryParse(_longitudeCtrl.text) ?? -78.467834;
-      _reverseGeocode(updatedLat, updatedLng);
-    });
+    );
   }
 
-  void _showSnackBar(String message, {bool error = false}) {
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: error ? AppColors.error : AppColors.secondary,
+        backgroundColor: AppColors.secondary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
-        ),
-        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message, {VoidCallback? onRetry}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        action: onRetry != null
+            ? SnackBarAction(
+                label: 'Reintentar',
+                textColor: Colors.white,
+                onPressed: onRetry,
+              )
+            : null,
+        duration: const Duration(seconds: 5),
       ),
     );
   }
@@ -616,9 +545,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         ),
         backgroundColor: AppColors.secondary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(context.cardBorderRadiusValue),
-        ),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -678,142 +604,271 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
     if (!confirmed!) return;
 
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _stepErrors = [null, null, null];
+    });
+
     final client = http.Client();
 
     try {
+      // === PASO 1: CLIENTE ===
       if (_isNaturalPerson) {
-        await UpdateCustomerUseCase(
-          CustomerRepositoryImpl(
-            remoteDataSource: CustomerRemoteDataSource(client: client),
-          ),
-        )(
-          customerId: _identificationCtrl.text,
-          params: UpdateCustomerParams(
-            firstName: _firstNameCtrl.text,
-            lastName: _lastNameCtrl.text,
-            emails: _emailsNatural
-                .map((e) => e.text.trim())
-                .where((e) => e.isNotEmpty)
-                .toList(),
-            phoneNumbers: _phonesNatural
-                .map((e) => e.text.trim())
-                .where((e) => e.isNotEmpty)
-                .toList(),
-            dateOfBirth: _dobCtrl.text,
-            sexId: _sexId,
-            civilStatus: _civilStatus,
-            address: _addressCtrl.text,
-            professionId: _professionId,
-            originCountry: _originCountry,
-            identificationType: _identificationType,
-            parishId: _parishId,
-            deceased: _deceased,
-          ),
+        await _updateNaturalPerson(client);
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Cliente actualizado',
+          type: SnackBarType.success,
         );
+        await Future.delayed(const Duration(milliseconds: 600));
       } else if (_isCompany) {
-        await UpdateCompanyUseCase(
-          CompanyRepositoryImpl(
-            remoteDataSource: CompanyRemoteDataSource(client: client),
-          ),
-        )(
-          companyRuc: _rucCtrl.text,
-          params: UpdateCompanyParams(
-            companyName: _companyNameCtrl.text,
-            socialReason: _socialReasonCtrl.text,
-            companyAddress: _companyAddressCtrl.text,
-            companyParishId: _companyParishId,
-            companyCountry: _companyCountry,
-            companyEmails: _emailsCompany
-                .map((e) => e.text.trim())
-                .where((e) => e.isNotEmpty)
-                .toList(),
-            companyPhones: _phonesCompany
-                .map((e) => e.text.trim())
-                .where((e) => e.isNotEmpty)
-                .toList(),
-            identificationType: _identificationTypeCompany,
-          ),
+        await _updateCompany(client);
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Empresa actualizada',
+          type: SnackBarType.success,
         );
+        await Future.delayed(const Duration(milliseconds: 600));
       }
 
-      final lat = double.tryParse(_latitudeCtrl.text) ?? 0.0;
-      final lng = double.tryParse(_longitudeCtrl.text) ?? 0.0;
-      final alt = double.tryParse(_accuracyCtrl.text) ?? 0.0;
-      final prec = double.tryParse(_precisionCtrl.text) ?? 0.0;
+      // === PASO 2: ACOMETIDA ===
+      await _updateConnection(client);
+      CustomOverlaySnackBar.show(
+        context: context,
+        message: 'Acometida actualizada',
+        type: SnackBarType.success,
+      );
+      await Future.delayed(const Duration(milliseconds: 600));
 
-      await UpdateConnectionUseCase(
-        ConnectionRepositoryImpl(
-          remoteDataSource: ConnectionRemoteDataSource(client: client),
+      // === OBSERVACIÓN (opcional) ===
+      if (_observationDetailsCtrl.text.trim().isNotEmpty) {
+        await _addObservation(client);
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Observación guardada',
+          type: SnackBarType.info,
+        );
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
+
+      // === PASO 3: PREDIO ===
+      final hasValidProperty =
+          _propertyCadastralKeyCtrl.text != 'N/A' &&
+          _propertyCadastralKeyCtrl.text.isNotEmpty;
+      if (hasValidProperty ||
+          widget.connection.properties?.isNotEmpty == true) {
+        await _updateProperty(client);
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Predio actualizado',
+          type: SnackBarType.success,
+        );
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
+
+      // === ÉXITO FINAL ===
+      _showSuccess();
+    } catch (e) {
+      // Detectar paso fallido
+      String stepName = 'desconocido';
+      int stepIndex = 0;
+
+      if (_isNaturalPerson || _isCompany) {
+        stepName = 'cliente';
+        stepIndex = 0;
+      } else if (e.toString().contains('connection')) {
+        stepName = 'acometida';
+        stepIndex = 1;
+      } else if (e.toString().contains('property')) {
+        stepName = 'predio';
+        stepIndex = 2;
+      }
+
+      // Mostrar error con acción de reintento
+      CustomOverlaySnackBar.show(
+        context: context,
+        message: 'Error al actualizar $stepName',
+        type: SnackBarType.error,
+        duration: const Duration(seconds: 5),
+        onDismissed: () {
+          // Reintentar solo el paso fallido
+          _retryStep(stepIndex, client);
+        },
+      );
+
+      setState(() => _stepErrors[stepIndex] = e.toString());
+    } finally {
+      client.close();
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _retryStep(int step, http.Client client) async {
+    setState(() => _isSubmitting = true);
+    try {
+      switch (step) {
+        case 0:
+          _isNaturalPerson
+              ? await _updateNaturalPerson(client)
+              : await _updateCompany(client);
+          CustomOverlaySnackBar.show(
+            context: context,
+            message: 'Cliente reintentado',
+            type: SnackBarType.success,
+          );
+          break;
+        case 1:
+          await _updateConnection(client);
+          CustomOverlaySnackBar.show(
+            context: context,
+            message: 'Acometida reintentada',
+            type: SnackBarType.success,
+          );
+          break;
+        case 2:
+          await _updateProperty(client);
+          CustomOverlaySnackBar.show(
+            context: context,
+            message: 'Predio reintentado',
+            type: SnackBarType.success,
+          );
+          break;
+      }
+      setState(() => _stepErrors[step] = null);
+    } catch (e) {
+      setState(() => _stepErrors[step] = e.toString());
+      CustomOverlaySnackBar.show(
+        context: context,
+        message: 'Falló al reintentar',
+        type: SnackBarType.error,
+      );
+    } finally {
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _updateNaturalPerson(http.Client client) async =>
+      await UpdateCustomerUseCase(
+        CustomerRepositoryImpl(
+          remoteDataSource: CustomerRemoteDataSource(client: client),
         ),
       )(
-        connectionId: widget.connection.connectionId,
-        params: UpdateConnectionParams(
-          clientId: _isNaturalPerson ? _identificationCtrl.text : _rucCtrl.text,
-          connectionRateId: _rateName == 'BENEFICENCIA'
-              ? 1
-              : _rateName == 'RESIDENCIAL'
-              ? 2
-              : _rateName == 'INDUSTRIAL'
-              ? 3
-              : 6,
-          connectionRateName: _rateName!,
-          connectionMeterNumber: _meterNumberCtrl.text,
-          connectionContractNumber: _contractNumberCtrl.text,
-          connectionSewerage: _sewerage,
-          connectionStatus: _status,
-          connectionAddress: _connectionAddressCtrl.text,
-          connectionInstallationDate: _installationDateCtrl.text.isNotEmpty
-              ? _installationDateCtrl.text
-              : DateTime.now().toIso8601String(),
-          connectionPeopleNumber: int.tryParse(_peopleNumberCtrl.text) ?? 1,
-          connectionZone: int.tryParse(_zoneCtrl.text) ?? 1,
-          longitude: lng,
-          latitude: lat,
-          connectionReference: _referenceCtrl.text,
-          propertyCadastralKey: _propertyCadastralKeyCtrl.text,
-          connectionMetaData: {
-            'country': _countryCtrl.text,
-            'province': _provinceCtrl.text,
-            'canton': _cantonCtrl.text,
-            'full_address': _addressFullCtrl.text,
-            'accuracy_meters': alt,
-            'precision': prec,
-            'source': 'mobile_app',
-          },
-          connectionAltitude: alt,
-          connectionPrecision: prec,
-          connectionGeolocationDate: _geolocationDateCtrl.text.isNotEmpty
-              ? _geolocationDateCtrl.text
-              : DateTime.now().toIso8601String(),
-          zoneId: _zoneName == 'ZONA 1'
-              ? 1
-              : _zoneName == 'ZONA 2'
-              ? 2
-              : _zoneName == 'ZONA 3'
-              ? 3
-              : _zoneName == 'ZONA 4'
-              ? 4
-              : 0,
+        customerId: _identificationCtrl.text,
+        params: UpdateCustomerParams(
+          firstName: _firstNameCtrl.text,
+          lastName: _lastNameCtrl.text,
+          emails: _emailsNatural
+              .map((e) => e.text.trim())
+              .where((e) => e.isNotEmpty)
+              .toList(),
+          phoneNumbers: _phonesNatural
+              .map((e) => e.text.trim())
+              .where((e) => e.isNotEmpty)
+              .toList(),
+          dateOfBirth: _dobCtrl.text,
+          sexId: _sexId,
+          civilStatus: _civilStatus,
+          address: _addressCtrl.text,
+          professionId: _professionId,
+          originCountry: _originCountry,
+          identificationType: _identificationType,
+          parishId: _parishId,
+          deceased: _deceased,
         ),
       );
 
-      if (_observationDetailsCtrl.text.trim().isNotEmpty) {
-        await AddObservationConnectionUseCase(
-          ObservationConnectionRepositoryImpl(
-            remoteDataSource: ObservationConnectionRemoteDataSource(
-              client: client,
-            ),
-          ),
-        )(
-          params: CreateObservationParams(
-            connectionId: _observationConnectionIdCtrl.text,
-            observationTitle: _observationTitleCtrl.text,
-            observationDetails: _observationDetailsCtrl.text,
-          ),
-        );
-      }
+  Future<void> _updateCompany(http.Client client) async =>
+      await UpdateCompanyUseCase(
+        CompanyRepositoryImpl(
+          remoteDataSource: CompanyRemoteDataSource(client: client),
+        ),
+      )(
+        companyRuc: _rucCtrl.text,
+        params: UpdateCompanyParams(
+          companyName: _companyNameCtrl.text,
+          socialReason: _socialReasonCtrl.text,
+          companyAddress: _companyAddressCtrl.text,
+          companyParishId: _companyParishId,
+          companyCountry: _companyCountry,
+          companyEmails: _emailsCompany
+              .map((e) => e.text.trim())
+              .where((e) => e.isNotEmpty)
+              .toList(),
+          companyPhones: _phonesCompany
+              .map((e) => e.text.trim())
+              .where((e) => e.isNotEmpty)
+              .toList(),
+          identificationType: _identificationTypeCompany,
+        ),
+      );
 
+  Future<void> _updateConnection(http.Client client) async {
+    final lat = double.tryParse(_latitudeCtrl.text) ?? 0.0;
+    final lng = double.tryParse(_longitudeCtrl.text) ?? 0.0;
+    final alt = double.tryParse(_accuracyCtrl.text) ?? 0.0;
+    final prec = double.tryParse(_precisionCtrl.text) ?? 0.0;
+
+    await UpdateConnectionUseCase(
+      ConnectionRepositoryImpl(
+        remoteDataSource: ConnectionRemoteDataSource(client: client),
+      ),
+    )(
+      connectionId: widget.connection.connectionId,
+      params: UpdateConnectionParams(
+        clientId: _isNaturalPerson ? _identificationCtrl.text : _rucCtrl.text,
+        connectionRateId: _getRateId(_rateName),
+        connectionRateName: _rateName!,
+        connectionMeterNumber: _meterNumberCtrl.text,
+        connectionContractNumber: _contractNumberCtrl.text,
+        connectionSewerage: _sewerage,
+        connectionStatus: _status,
+        connectionAddress: _connectionAddressCtrl.text,
+        connectionInstallationDate: _installationDateCtrl.text.isNotEmpty
+            ? _installationDateCtrl.text
+            : DateTime.now().toIso8601String(),
+        connectionPeopleNumber: int.tryParse(_peopleNumberCtrl.text) ?? 1,
+        connectionZone: int.tryParse(_zoneCtrl.text) ?? 1,
+        longitude: lng,
+        latitude: lat,
+        connectionReference: _referenceCtrl.text,
+        propertyCadastralKey: _propertyCadastralKeyCtrl.text == 'N/A'
+            ? null
+            : _propertyCadastralKeyCtrl.text,
+        connectionMetaData: {
+          'country': _countryCtrl.text,
+          'province': _provinceCtrl.text,
+          'canton': _cantonCtrl.text,
+          'full_address': _addressFullCtrl.text,
+          'accuracy_meters': alt,
+          'precision': prec,
+          'source': 'mobile_app',
+        },
+        connectionAltitude: alt,
+        connectionPrecision: prec,
+        connectionGeolocationDate: _geolocationDateCtrl.text.isNotEmpty
+            ? _geolocationDateCtrl.text
+            : DateTime.now().toIso8601String(),
+        zoneId: _getZoneId(_zoneName),
+      ),
+    );
+  }
+
+  Future<void> _addObservation(http.Client client) async =>
+      await AddObservationConnectionUseCase(
+        ObservationConnectionRepositoryImpl(
+          remoteDataSource: ObservationConnectionRemoteDataSource(
+            client: client,
+          ),
+        ),
+      )(
+        params: CreateObservationParams(
+          connectionId: _observationConnectionIdCtrl.text,
+          observationTitle: _observationTitleCtrl.text,
+          observationDetails: _observationDetailsCtrl.text,
+        ),
+      );
+
+  Future<void> _updateProperty(http.Client client) async =>
       await UpdatePropertyUseCase(
         PropertyRepositoryImpl(
           remoteDataSource: PropertyRemoteDataSource(client: client),
@@ -845,14 +900,22 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         ),
       );
 
-      _showSuccess();
-    } catch (e) {
-      _showSnackBar('Error al guardar: $e', error: true);
-    } finally {
-      client.close();
-      setState(() => _isSubmitting = false);
-    }
-  }
+  int _getRateId(String? rate) => rate == 'BENEFICENCIA'
+      ? 1
+      : rate == 'RESIDENCIAL'
+      ? 2
+      : rate == 'INDUSTRIAL'
+      ? 3
+      : 6;
+  int _getZoneId(String? zone) => zone == 'ZONA 1'
+      ? 1
+      : zone == 'ZONA 2'
+      ? 2
+      : zone == 'ZONA 3'
+      ? 3
+      : zone == 'ZONA 4'
+      ? 4
+      : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -917,16 +980,29 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   Widget _buildStepIcon(int index, IconData baseIcon) {
     final isActive = _currentStep == index;
     final isCompleted = _currentStep > index;
-    final icon = isCompleted ? Icons.check : baseIcon;
-    final bg = isActive
-        ? AppColors.accent
-        : isCompleted
-        ? AppColors.secondary
-        : AppColors.primary.withOpacity(0.3);
-    final color = isActive ? Colors.white : Colors.white70;
+    final hasError = _stepErrors[index] != null;
+
+    IconData icon;
+    Color bg;
+    Color color = Colors.white;
+
+    if (hasError) {
+      icon = Icons.error;
+      bg = AppColors.error;
+    } else if (isCompleted) {
+      icon = Icons.check;
+      bg = AppColors.secondary;
+    } else if (isActive) {
+      icon = baseIcon;
+      bg = AppColors.accent;
+    } else {
+      icon = baseIcon;
+      bg = AppColors.primary.withOpacity(0.3);
+      color = Colors.white70;
+    }
 
     return GestureDetector(
-      onTap: index <= _currentStep
+      onTap: (index <= _currentStep || hasError)
           ? () {
               setState(() => _currentStep = index);
               _pageController.jumpToPage(index);
@@ -936,14 +1012,13 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         duration: const Duration(milliseconds: 300),
         width: 35,
         height: 35,
-        margin: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: bg,
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: AppColors.accent.withOpacity(0.4),
+                    color: bg.withOpacity(0.4),
                     blurRadius: 16,
                     spreadRadius: 2,
                   ),
@@ -970,100 +1045,99 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     );
   }
 
-  Widget _buildClientStep() {
-    return SingleChildScrollView(
-      padding: context.screenPadding,
-      child: Form(
-        key: _formKeys[0],
-        child: Column(
-          children: [
-            _buildSummaryCard(),
-            context.vSpace(0.0),
-            FormCard(
-              title: 'Tipo de Cliente',
-              child: Center(
-                child: SegmentedButton<bool>(
-                  segments: [
-                    ButtonSegment(
-                      value: true,
-                      label: Text(
-                        'Persona Natural',
-                        style: TextStyle(
-                          color: _isNaturalPerson
-                              ? Colors.white
-                              : AppColors.textPrimary.withOpacity(0.6),
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.verified_user,
+  Widget _buildClientStep() => SingleChildScrollView(
+    padding: context.screenPadding,
+    child: Form(
+      key: _formKeys[0],
+      child: Column(
+        children: [
+          _buildSummaryCard(),
+          context.vSpace(0.0),
+          FormCard(
+            title: 'Tipo de Cliente',
+            child: Center(
+              child: SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment(
+                    value: true,
+                    label: Text(
+                      'Persona Natural',
+                      style: TextStyle(
                         color: _isNaturalPerson
                             ? Colors.white
                             : AppColors.textPrimary.withOpacity(0.6),
                       ),
                     ),
-                    ButtonSegment(
-                      value: false,
-                      label: Text(
-                        'Empresa',
-                        style: TextStyle(
-                          color: _isCompany
-                              ? Colors.white
-                              : AppColors.textPrimary.withOpacity(0.6),
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.business,
+                    icon: Icon(
+                      Icons.verified_user,
+                      color: _isNaturalPerson
+                          ? Colors.white
+                          : AppColors.textPrimary.withOpacity(0.6),
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text(
+                      'Empresa',
+                      style: TextStyle(
                         color: _isCompany
                             ? Colors.white
                             : AppColors.textPrimary.withOpacity(0.6),
                       ),
                     ),
-                  ],
-                  selected: {_isNaturalPerson},
-                  onSelectionChanged: null,
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith(
-                      (s) => s.contains(WidgetState.selected)
-                          ? AppColors.primary
-                          : AppColors.surface.withOpacity(0.6),
+                    icon: Icon(
+                      Icons.business,
+                      color: _isCompany
+                          ? Colors.white
+                          : AppColors.textPrimary.withOpacity(0.6),
                     ),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          context.mediumBorderRadiusValue,
-                        ),
+                  ),
+                ],
+                selected: {_isNaturalPerson},
+                onSelectionChanged: (v) =>
+                    setState(() => _isNaturalPerson = v.first),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith(
+                    (s) => s.contains(WidgetState.selected)
+                        ? AppColors.primary
+                        : AppColors.surface.withOpacity(0.6),
+                  ),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        context.mediumBorderRadiusValue,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-            context.vSpace(0.0),
-            if (_isNaturalPerson)
-              NaturalPersonForm(
-                firstNameCtrl: _firstNameCtrl,
-                lastNameCtrl: _lastNameCtrl,
-                identificationCtrl: _identificationCtrl,
-                dobCtrl: _dobCtrl,
-                addressCtrl: _addressCtrl,
-                emails: _emailsNatural,
-                phones: _phonesNatural,
-                onSelectDate: () => _selectDate(_dobCtrl),
-              )
-            else if (_isCompany)
-              CompanyForm(
-                companyNameCtrl: _companyNameCtrl,
-                socialReasonCtrl: _socialReasonCtrl,
-                rucCtrl: _rucCtrl,
-                companyAddressCtrl: _companyAddressCtrl,
-                emails: _emailsCompany,
-                phones: _phonesCompany,
-              ),
-          ],
-        ),
+          ),
+          context.vSpace(0.0),
+          if (_isNaturalPerson)
+            NaturalPersonForm(
+              firstNameCtrl: _firstNameCtrl,
+              lastNameCtrl: _lastNameCtrl,
+              identificationCtrl: _identificationCtrl,
+              dobCtrl: _dobCtrl,
+              addressCtrl: _addressCtrl,
+              emails: _emailsNatural,
+              phones: _phonesNatural,
+              onSelectDate: () => _selectDate(_dobCtrl),
+            )
+          else if (_isCompany)
+            CompanyForm(
+              companyNameCtrl: _companyNameCtrl,
+              socialReasonCtrl: _socialReasonCtrl,
+              rucCtrl: _rucCtrl,
+              companyAddressCtrl: _companyAddressCtrl,
+              emails: _emailsCompany,
+              phones: _phonesCompany,
+            ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildSummaryCard() {
     final clientName = widget.connection.person != null
@@ -1113,328 +1187,292 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     );
   }
 
-  Widget _buildConnectionStep() {
-    return SingleChildScrollView(
-      padding: context.screenPadding,
-      child: Form(
-        key: _formKeys[1],
-        child: Column(
-          children: [
-            FormCard(
-              title: 'Datos de la Acometida',
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: _cadastralKeyCtrl,
-                          label: 'Clave Catastral',
-                          icon: Icons.vpn_key,
-                        ),
+  Widget _buildConnectionStep() => SingleChildScrollView(
+    padding: context.screenPadding,
+    child: Form(
+      key: _formKeys[1],
+      child: Column(
+        children: [
+          FormCard(
+            title: 'Datos de la Acometida',
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _cadastralKeyCtrl,
+                        label: 'Clave Catastral',
+                        icon: Icons.vpn_key,
                       ),
-                      context.hSpace(0.025),
-                      Expanded(
-                        child: CustomTextField(
-                          controller: _meterNumberCtrl,
-                          label: 'Número de Medidor',
-                          icon: Icons.water_drop,
-                        ),
+                    ),
+                    context.hSpace(0.025),
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _meterNumberCtrl,
+                        label: 'Número de Medidor',
+                        icon: Icons.water_drop,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: TextEditingController(
-                            text: formatFromIsoDate(_installationDateCtrl.text),
-                          ),
-                          label: 'Fecha de Instalación',
-                          icon: Icons.calendar_today,
-                          readOnly: true,
-                          onTap: () => _selectDate(_installationDateCtrl),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(
+                        controller: TextEditingController(
+                          text: formatFromIsoDate(_installationDateCtrl.text),
                         ),
+                        label: 'Fecha de Instalación',
+                        icon: Icons.calendar_today,
+                        readOnly: true,
+                        onTap: () => _selectDate(_installationDateCtrl),
                       ),
-                      context.hSpace(0.025),
-                      Expanded(
-                        child: CustomTextField(
-                          controller: _peopleNumberCtrl,
-                          label: 'Número de Personas',
-                          icon: Icons.group,
-                          keyboardType: TextInputType.number,
-                          validator: numberValidator,
-                        ),
+                    ),
+                    context.hSpace(0.025),
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _peopleNumberCtrl,
+                        label: 'Número de Personas',
+                        icon: Icons.group,
+                        keyboardType: TextInputType.number,
+                        validator: numberValidator,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _validRates.contains(_rateName)
-                              ? _rateName
-                              : null,
-                          hint: Text(
-                            'Tarifa',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          decoration: _dropdownDecoration('Tarifa'),
-                          isDense: true,
-                          items: _validRates
-                              .map(
-                                (r) => DropdownMenuItem(
-                                  value: r,
-                                  child: Text(
-                                    r,
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _validRates.contains(_rateName)
+                            ? _rateName
+                            : null,
+                        hint: const Text('Tarifa'),
+                        decoration: _dropdownDecoration('Tarifa'),
+                        items: _validRates
+                            .map(
+                              (r) => DropdownMenuItem(
+                                value: r,
+                                child: Text(
+                                  r,
+                                  style: const TextStyle(fontSize: 10),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (v) => setState(() => _rateName = v),
-                        ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _rateName = v),
                       ),
-                      context.hSpace(0.02), // Espacio entre campos
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _validZones.contains(_zoneName)
-                              ? _zoneName
-                              : null,
-                          hint: Text(
-                            'Zona',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          decoration: _dropdownDecoration('Zona'),
-                          isDense: true,
-                          items: _validZones
-                              .map(
-                                (r) => DropdownMenuItem(
-                                  value: r,
-                                  child: Text(
-                                    r,
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
+                    ),
+                    context.hSpace(0.02),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _validZones.contains(_zoneName)
+                            ? _zoneName
+                            : null,
+                        hint: const Text('Zona'),
+                        decoration: _dropdownDecoration('Zona'),
+                        items: _validZones
+                            .map(
+                              (r) => DropdownMenuItem(
+                                value: r,
+                                child: Text(
+                                  r,
+                                  style: const TextStyle(fontSize: 10),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (v) => setState(() => _zoneName = v),
-                        ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _zoneName = v),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    controller: _connectionAddressCtrl,
-                    label: 'Dirección',
-                    icon: Icons.location_on,
-                  ),
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    controller: _referenceCtrl,
-                    label: 'Referencia',
-                    icon: Icons.pin_drop,
-                    isRequired: false,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildSwitchCard(
-                        'Alcantarillado',
-                        _sewerage,
-                        (v) => setState(() => _sewerage = v),
-                      ),
-                      _buildSwitchCard(
-                        'Estado Activo',
-                        _status,
-                        (v) => setState(() => _status = v),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                CustomTextField(
+                  controller: _connectionAddressCtrl,
+                  label: 'Dirección',
+                  icon: Icons.location_on,
+                ),
+                const SizedBox(height: 10),
+                CustomTextField(
+                  controller: _referenceCtrl,
+                  label: 'Referencia',
+                  icon: Icons.pin_drop,
+                  isRequired: false,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildSwitchCard(
+                      'Alcantarillado',
+                      _sewerage,
+                      (v) => setState(() => _sewerage = v),
+                    ),
+                    _buildSwitchCard(
+                      'Estado Activo',
+                      _status,
+                      (v) => setState(() => _status = v),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            FormCard(
-              title: 'Observación o Novedad',
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    controller: _observationDetailsCtrl,
-                    label: 'Detalles',
-                    icon: Icons.notes,
-                    isTextArea: true,
-                    isRequired: false,
-                  ),
-                ],
-              ),
+          ),
+          FormCard(
+            title: 'Observación o Novedad',
+            child: CustomTextField(
+              controller: _observationDetailsCtrl,
+              label: 'Detalles',
+              icon: Icons.notes,
+              isTextArea: true,
+              isRequired: false,
             ),
-            ImagesSection(selectedImages: _selectedImages),
-            GpsSection(
-              latitudeCtrl: _latitudeCtrl,
-              longitudeCtrl: _longitudeCtrl,
-              accuracyCtrl: _accuracyCtrl,
-              countryCtrl: _countryCtrl,
-              provinceCtrl: _provinceCtrl,
-              cantonCtrl: _cantonCtrl,
-              addressFullCtrl: _addressFullCtrl,
-              precisionCtrl: _precisionCtrl,
-              geolocationDateCtrl: _geolocationDateCtrl,
-              onGetLocation: _getCurrentLocationAndAddress,
-              onOpenMap: _openMap,
-              isGettingLocation: _isGettingLocation,
-              animationController: _animationController,
-              scaleAnimation: _scaleAnimation,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _dropdownDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(
-        fontSize: 12, // Tamaño controlado
-        color: Colors.grey[700],
-        fontWeight: FontWeight.w400,
-      ),
-      hintStyle: TextStyle(fontSize: 10, color: Colors.grey[600]),
-      filled: true,
-      fillColor: AppColors.surface.withOpacity(0.3),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.error),
-      ),
-      isDense: true,
-    );
-  }
-
-  Widget _buildPropertyStep() {
-    return SingleChildScrollView(
-      padding: context.screenPadding,
-      child: Form(
-        key: _formKeys[2],
-        child: PropertyForm(
-          cadastralKeyCtrl: _propertyCadastralKeyCtrl,
-          propertyAddressCtrl: _propertyAddressCtrl,
-          alleywayCtrl: _alleywayCtrl,
-          landAreaCtrl: _landAreaCtrl,
-          constructionAreaCtrl: _constructionAreaCtrl,
-          landValueCtrl: _landValueCtrl,
-          constructionValueCtrl: _constructionValueCtrl,
-          properties: widget.connection.properties,
-          onPropertySelected: (property) {
-            setState(() {
-              _propertyCadastralKeyCtrl.text = property.propertyCadastralKey;
-              _propertyAddressCtrl.text = property.propertyAddress;
-              _alleywayCtrl.text = property.propertyAlleyway;
-              _landAreaCtrl.text = '';
-              _constructionAreaCtrl.text = '';
-              _landValueCtrl.text = '';
-              _constructionValueCtrl.text = '';
-            });
-            _showSnackBar('Propiedad cargada: ${property.propertyAddress}');
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      padding: context.screenPadding,
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, -3),
+          ),
+          ImagesSection(selectedImages: _selectedImages),
+          GpsSection(
+            latitudeCtrl: _latitudeCtrl,
+            longitudeCtrl: _longitudeCtrl,
+            accuracyCtrl: _accuracyCtrl,
+            countryCtrl: _countryCtrl,
+            provinceCtrl: _provinceCtrl,
+            cantonCtrl: _cantonCtrl,
+            addressFullCtrl: _addressFullCtrl,
+            precisionCtrl: _precisionCtrl,
+            geolocationDateCtrl: _geolocationDateCtrl,
+            onGetLocation: _getCurrentLocationAndAddress,
+            onOpenMap: _openMap,
+            isGettingLocation: _isGettingLocation,
+            animationController: _animationController,
+            scaleAnimation: _scaleAnimation,
           ),
         ],
       ),
-      child: Row(
-        children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: ActionButton(
-                label: 'Anterior',
-                icon: Icons.arrow_back,
-                color: AppColors.textSecondary.withOpacity(0.8),
-                onPressed: _prevStep,
-              ),
-            ),
-          if (_currentStep > 0) context.hSpace(0.02),
+    ),
+  );
+
+  InputDecoration _dropdownDecoration(String label) => InputDecoration(
+    labelText: label,
+    labelStyle: const TextStyle(
+      fontSize: 12,
+      color: Colors.grey,
+      fontWeight: FontWeight.w400,
+    ),
+    filled: true,
+    fillColor: AppColors.surface.withOpacity(0.3),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppColors.border),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppColors.error),
+    ),
+    isDense: true,
+  );
+
+  Widget _buildPropertyStep() => SingleChildScrollView(
+    padding: context.screenPadding,
+    child: Form(
+      key: _formKeys[2],
+      child: PropertyForm(
+        cadastralKeyCtrl: _propertyCadastralKeyCtrl,
+        propertyAddressCtrl: _propertyAddressCtrl,
+        alleywayCtrl: _alleywayCtrl,
+        landAreaCtrl: _landAreaCtrl,
+        constructionAreaCtrl: _constructionAreaCtrl,
+        landValueCtrl: _landValueCtrl,
+        constructionValueCtrl: _constructionValueCtrl,
+        properties: widget.connection.properties,
+        onPropertySelected: (property) {
+          setState(() {
+            _propertyCadastralKeyCtrl.text = property.propertyCadastralKey;
+            _propertyAddressCtrl.text = property.propertyAddress;
+            _alleywayCtrl.text = property.propertyAlleyway;
+          });
+          _showSnackBar('Propiedad cargada: ${property.propertyAddress}');
+        },
+      ),
+    ),
+  );
+
+  Widget _buildBottomBar() => Container(
+    padding: context.screenPadding,
+    decoration: BoxDecoration(
+      color: AppColors.card,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 12,
+          offset: const Offset(0, -3),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        if (_currentStep > 0)
           Expanded(
             child: ActionButton(
-              label: _currentStep == 2 ? 'Finalizar' : 'Siguiente',
-              icon: _currentStep == 2 ? Icons.check : Icons.arrow_forward,
-              color: AppColors.secondary,
-              onPressed: _nextStep,
-              loading: _isSubmitting,
+              label: 'Anterior',
+              icon: Icons.arrow_back,
+              color: AppColors.textSecondary.withOpacity(0.8),
+              onPressed: _prevStep,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        if (_currentStep > 0) context.hSpace(0.02),
+        Expanded(
+          child: ActionButton(
+            label: _currentStep == 2 ? 'Finalizar' : 'Siguiente',
+            icon: _currentStep == 2 ? Icons.check : Icons.arrow_forward,
+            color: AppColors.secondary,
+            onPressed: _nextStep,
+            loading: _isSubmitting,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _buildSwitchCard(
     String title,
     bool value,
     ValueChanged<bool> onChanged,
-  ) {
-    return Expanded(
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: context.smallSpacing * 0.5),
-        decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
-          border: Border.all(
-            color: AppColors.primary.withOpacity(0.2),
-            width: 0.5,
-          ),
-        ),
-        child: SwitchListTile(
-          title: Text(
-            title,
-            style: context.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-          ),
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppColors.primary,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: context.smallSpacing,
-          ),
-          dense: true,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
-          ),
+  ) => Expanded(
+    child: Container(
+      margin: EdgeInsets.symmetric(horizontal: context.smallSpacing * 0.5),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 0.5,
         ),
       ),
-    );
-  }
+      child: SwitchListTile(
+        title: Text(
+          title,
+          style: context.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+        ),
+        value: value,
+        onChanged: onChanged,
+        activeColor: AppColors.primary,
+        contentPadding: EdgeInsets.symmetric(horizontal: context.smallSpacing),
+        dense: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
+        ),
+      ),
+    ),
+  );
 }

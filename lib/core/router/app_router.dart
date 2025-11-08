@@ -9,8 +9,6 @@ import 'package:app_properties/main.dart';
 // === PANTALLAS ===
 import 'package:app_properties/features/auth/presentation/pages/login_screen.dart';
 import 'package:app_properties/features/home/presentation/pages/home_screen.dart';
-import 'package:app_properties/features/manually/presentation/pages/manual_entry_screen.dart';
-import 'package:app_properties/features/form/presentation/pages/view_data_screen.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/update_form_screen.dart';
 import 'package:app_properties/features/observations/presentation/pages/observation_page.dart';
 
@@ -18,7 +16,6 @@ import 'package:app_properties/features/properties/list/presentation/manually/pa
 
 // === BLOCs ===
 import 'package:app_properties/features/properties/list/presentation/scan/blocs/connection_with_properties_bloc.dart';
-import 'package:app_properties/features/manually/presentation/bloc/manually_bloc.dart';
 import 'package:app_properties/features/observations/presentation/bloc/observation_bloc.dart';
 
 // === ENTIDADES ===
@@ -45,36 +42,6 @@ class AppRouter {
           );
         },
       ),
-      /*
-      // === ENTRADA MANUAL ===
-      GoRoute(
-        path: '/manually-entry',
-        builder: (context, state) => BlocProvider(
-          create: (_) => di.sl<ManuallyBloc>(),
-          child: const ManualEntryScreen(),
-        ),
-      ),
-*/
-      // === VER DATOS (solo lectura) ===
-      GoRoute(
-        path: '/view-data',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-
-          if (extra == null || !extra.containsKey('data')) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error: datos no proporcionados')),
-              );
-              context.go('/home');
-            });
-            return const SizedBox.shrink();
-          }
-
-          return ViewDataScreen(data: extra['data'] as Map<String, dynamic>);
-        },
-      ),
-
       // === EDITAR FORMULARIO ===
       GoRoute(
         path: '/update-form',

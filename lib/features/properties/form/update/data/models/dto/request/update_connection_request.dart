@@ -25,7 +25,7 @@ class UpdateConnectionRequest {
   final double connectionPrecision;
   final String connectionGeolocationDate;
   final String connectionGeometricZone;
-  final String propertyCadastralKey;
+  final String? propertyCadastralKey;
 
   UpdateConnectionRequest({
     required this.connectionId,

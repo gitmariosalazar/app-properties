@@ -3,26 +3,39 @@ class ApiResponse<T> {
   final String time;
   final List<String> message;
   final String url;
-  final List<T> data;
+  final T? data; // ← ACEPTA CUALQUIER TIPO: List, Map, String, null
 
   ApiResponse({
     required this.statusCode,
     required this.time,
     required this.message,
     required this.url,
-    required this.data,
+    this.data,
   });
 
   factory ApiResponse.fromJson(
     Map<String, dynamic> json,
-    T Function(Map<String, dynamic>) fromJsonT,
+    T Function(dynamic) fromJsonT, // ← ACEPTA cualquier tipo
   ) {
+    final rawData = json['data'];
+
+    T? parsedData;
+    if (rawData != null) {
+      if (rawData is List) {
+        // Si es lista → mapear cada elemento
+        parsedData = rawData.map(fromJsonT).toList() as T;
+      } else {
+        // Si es objeto, string, etc. → aplicar fromJsonT directamente
+        parsedData = fromJsonT(rawData);
+      }
+    }
+
     return ApiResponse<T>(
-      statusCode: json['status_code'],
-      time: json['time'],
-      message: List<String>.from(json['message']),
-      url: json['url'],
-      data: (json['data'] as List<dynamic>).map((e) => fromJsonT(e)).toList(),
+      statusCode: json['status_code'] as int,
+      time: json['time'] as String,
+      message: List<String>.from(json['message'] ?? []),
+      url: json['url'] as String,
+      data: parsedData,
     );
   }
 }

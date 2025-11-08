@@ -165,7 +165,7 @@ class HomeScreen extends StatelessWidget {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          onPressed: () => context.push('/scan'),
+                          onPressed: () => context.push('/property-scan'),
                         ),
                         SizedBox(height: buttonSpacing),
                         _AnimatedMenuButton(
@@ -177,7 +177,8 @@ class HomeScreen extends StatelessWidget {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          onPressed: () => context.push('/manually-entry'),
+                          onPressed: () =>
+                              context.push('/manually-entry-properties'),
                         ),
                         //SizedBox(height: buttonSpacing),
                         /*

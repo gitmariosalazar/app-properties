@@ -1,5 +1,6 @@
+/*
 import 'dart:io';
-import 'package:app_properties/features/form/presentation/pages/form_screen.dart';
+import 'package:app_properties/components/button/responsive_button.dart';
 import 'package:app_properties/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -156,11 +157,11 @@ class _UpdateFormScreenState extends State<UpdateFormScreen>
     _referenceCtrl.text = data['connectionReference']?.toString() ?? '';
     _latitudeCtrl.text =
         data['latitude']?.toString() ??
-        data['connectionCoordinates']?.toString().split(',')?.first ??
+        data['connectionCoordinates']?.toString().split(',').first ??
         '-0.180653';
     _longitudeCtrl.text =
         data['longitude']?.toString() ??
-        data['connectionCoordinates']?.toString().split(',')?.last ??
+        data['connectionCoordinates']?.toString().split(',').last ??
         '-78.467834';
     _sectorCtrl.text = data['connectionSector']?.toString() ?? '';
     _accountCtrl.text = data['connectionAccount']?.toString() ?? '';
@@ -183,16 +184,19 @@ class _UpdateFormScreenState extends State<UpdateFormScreen>
     _constructionValueCtrl.text =
         data['propertyConstructionValue']?.toString() ?? '150000';
 
-    if (_emailsNatural.isEmpty)
+    if (_emailsNatural.isEmpty) {
       _emailsNatural.add(TextEditingController(text: 'cliente@ejemplo.com'));
-    if (_phonesNatural.isEmpty)
+    }
+    if (_phonesNatural.isEmpty) {
       _phonesNatural.add(TextEditingController(text: '+593999999999'));
+    }
   }
 
   String? _emailValidator(String? value) {
     if (value == null || value.trim().isEmpty) return 'Email requerido';
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim()))
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
       return 'Email inválido';
+    }
     return null;
   }
 
@@ -1767,3 +1771,4 @@ class _CompactAddButton extends StatelessWidget {
     );
   }
 }
+*/

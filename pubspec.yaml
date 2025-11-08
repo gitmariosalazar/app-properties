@@ -31,6 +31,7 @@ dependencies:
   flutter_osm_plugin: 1.4.3
   url_launcher: ^6.3.2
   google_maps_flutter: ^2.3.0
+  json_annotation: ^4.9.0
 
 flutter_launcher_icons:
   android: 'launcher_icon'
@@ -43,6 +44,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  build_runner: ^2.10.1
+  json_serializable: ^6.11.1
 
 flutter:
   uses-material-design: true

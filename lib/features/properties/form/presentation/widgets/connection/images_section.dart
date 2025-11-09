@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ImagesSection extends StatelessWidget {
+class ImagesSection extends StatefulWidget {
   final String connectionId;
   final String description;
 
@@ -19,6 +19,13 @@ class ImagesSection extends StatelessWidget {
     required this.connectionId,
     this.description = 'Imágenes de la acometida',
   });
+
+  @override
+  State<ImagesSection> createState() => _ImagesSectionState();
+}
+
+class _ImagesSectionState extends State<ImagesSection> {
+  bool _isPickingImage = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +60,7 @@ class ImagesSection extends StatelessWidget {
                 final imagePaths = (state is AddPropertyImagePicked)
                     ? state.imagePaths
                     : <String>[];
-                final isLoading = state is AddPropertyImageLoading;
+                final isBlocLoading = state is AddPropertyImageLoading;
 
                 return ListView.separated(
                   scrollDirection: Axis.horizontal,
@@ -62,7 +69,11 @@ class ImagesSection extends StatelessWidget {
                       SizedBox(width: context.smallSpacing),
                   itemBuilder: (context, index) {
                     if (index == imagePaths.length) {
-                      return _buildAddButton(imageSize, context, isLoading);
+                      return _buildAddButton(
+                        size: imageSize,
+                        context: context,
+                        isLoading: isBlocLoading || _isPickingImage,
+                      );
                     }
 
                     final path = imagePaths[index];
@@ -155,13 +166,30 @@ class ImagesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton(double size, BuildContext context, bool isLoading) {
-    return GestureDetector(
+  Widget _buildAddButton({
+    required double size,
+    required BuildContext context,
+    required bool isLoading,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
       onTap: isLoading
           ? null
           : () async {
-              // VALIDAR PERMISOS Y TOMAR FOTO
-              await _pickAndAddImage(context);
+              if (_isPickingImage) return;
+              setState(() => _isPickingImage = true);
+
+              context.read<AddPropertyImageBloc>().add(
+                PickImageFromCameraEvent(
+                  connectionId: widget.connectionId,
+                  description: widget.description,
+                ),
+              );
+
+              // Opcional: quitar bandera después de un tiempo
+              Future.delayed(const Duration(seconds: 3), () {
+                if (mounted) setState(() => _isPickingImage = false);
+              });
             },
       child: Opacity(
         opacity: isLoading ? 0.5 : 1.0,
@@ -197,53 +225,5 @@ class ImagesSection extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// TOMA FOTO + VALIDA EXTENSIÓN + AGREGA AL BLoC
-  Future<void> _pickAndAddImage(BuildContext context) async {
-    try {
-      final XFile? image = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        imageQuality: 85,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        preferredCameraDevice: CameraDevice.rear,
-        requestFullMetadata: false, // Evita HEIC en iOS
-      );
-
-      if (image == null) return;
-
-      final String path = image.path.toLowerCase();
-      final bool isValid =
-          path.endsWith('.jpg') ||
-          path.endsWith('.jpeg') ||
-          path.endsWith('.png');
-
-      if (!isValid) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Solo se permiten imágenes en formato JPG o PNG'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-        return;
-      }
-
-      // AGREGAR AL BLoC
-      context.read<AddPropertyImageBloc>().add(
-        PickImagesEvent(connectionId, description, imagePaths: [image.path]),
-      );
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al tomar la foto: ${e.toString()}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
   }
 }

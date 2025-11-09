@@ -37,3 +37,18 @@ class UploadAllImagesEvent extends AddPropertyImageEvent {
   @override
   List<Object?> get props => [connectionId, description];
 }
+
+// add_property_image_event.dart (agregar esta clase)
+
+class PickImageFromCameraEvent extends AddPropertyImageEvent {
+  final String connectionId;
+  final String description;
+
+  const PickImageFromCameraEvent({
+    required this.connectionId,
+    required this.description,
+  });
+
+  @override
+  List<Object> get props => [connectionId, description];
+}

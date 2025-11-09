@@ -33,6 +33,7 @@ dependencies:
   google_maps_flutter: ^2.3.0
   json_annotation: ^4.9.0
   http_parser: ^4.1.2
+  bloc_concurrency: ^0.3.0
 
 flutter_launcher_icons:
   android: 'launcher_icon'

@@ -1,3 +1,8 @@
+import 'package:app_properties/features/properties/form/add-img/data/datasources/property_image_remote_data_source.dart';
+import 'package:app_properties/features/properties/form/add-img/data/repositories/property_image_repository_impl.dart';
+import 'package:app_properties/features/properties/form/add-img/domain/repositories/property_image_repository.dart';
+import 'package:app_properties/features/properties/form/add-img/domain/usecases/add_property_images.dart';
+import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -114,5 +119,24 @@ Future<void> init() async {
   // 5. BLoC
   sl.registerFactory<ConnectionWithPropertiesBloc>(
     () => ConnectionWithPropertiesBloc(sl<GetConnectionWithProperties>()),
+  );
+
+  // ====================
+  // IMÁGENES DE PROPIEDAD
+  // ====================
+  sl.registerLazySingleton<PropertyImageRemoteDataSource>(
+    () => PropertyImageRemoteDataSourceImpl(sl<http.Client>()),
+  );
+
+  sl.registerLazySingleton<PropertyImageRepository>(
+    () => PropertyImageRepositoryImpl(sl<PropertyImageRemoteDataSource>()),
+  );
+
+  sl.registerLazySingleton<AddPropertyImagesUseCase>(
+    () => AddPropertyImagesUseCase(sl<PropertyImageRepository>()), // CORREGIDO
+  );
+
+  sl.registerFactory<AddPropertyImageBloc>(
+    () => AddPropertyImageBloc(sl<AddPropertyImagesUseCase>()),
   );
 }

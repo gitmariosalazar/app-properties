@@ -1,12 +1,18 @@
 // lib/features/properties/form/update/presentation/screens/update_connection_form_screen.dart
-import 'dart:typed_data';
+import 'dart:io';
+import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
+import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_event.dart';
+import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_state.dart';
+import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
+import 'package:get_it/get_it.dart';
+import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/components/button/widget_button.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
@@ -39,9 +45,6 @@ import 'package:app_properties/features/properties/form/presentation/screen/map_
 import 'package:app_properties/features/properties/form/presentation/widgets/client/company_form.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/client/natural_person_form.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/gps_section.dart';
-import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
-import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
-
 import 'package:app_properties/components/common/custom_overlay_snack_bar.dart';
 
 class UpdateConnectionFormScreen extends StatefulWidget {
@@ -157,9 +160,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   final _geolocationDateCtrl = TextEditingController();
   final _geometricZoneCtrl = TextEditingController();
 
-  // Imágenes
-  final List<XFile> _selectedImages = [];
-
   // Listas válidas
   static const _validRates = [
     'RESIDENCIAL',
@@ -208,7 +208,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     _pageController.dispose();
     _animationController.dispose();
     _mapController?.dispose();
-    _selectedImages.clear();
 
     final controllers = [
       _firstNameCtrl,
@@ -273,20 +272,24 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       _dobCtrl.text = p.birthDate ?? '';
       _addressCtrl.text = p.address ?? '';
       _sexId = p.genderId ?? 1;
-      _civilStatus = p.civilStatus ?? 1;
-      _professionId = p.professionId ?? 1;
+      _civilStatus = p.civilStatus;
+      _professionId = p.professionId;
       _originCountry = p.country ?? 'ECU';
       _parishId = p.parishId ?? '100150';
       _deceased = p.isDeceased ?? false;
 
       _emailsNatural.clear();
       _phonesNatural.clear();
-      for (var e in p.emails)
-        if (e?.email != null)
+      for (var e in p.emails) {
+        if (e?.email != null) {
           _emailsNatural.add(TextEditingController(text: e!.email));
-      for (var p in p.phones)
-        if (p?.numero != null)
+        }
+      }
+      for (var p in p.phones) {
+        if (p?.numero != null) {
           _phonesNatural.add(TextEditingController(text: p!.numero));
+        }
+      }
       if (_emailsNatural.isEmpty) _emailsNatural.add(TextEditingController());
       if (_phonesNatural.isEmpty) _phonesNatural.add(TextEditingController());
     }
@@ -302,17 +305,21 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
       _emailsCompany.clear();
       _phonesCompany.clear();
-      for (var e in c.emails)
-        if (e?.email != null)
+      for (var e in c.emails) {
+        if (e?.email != null) {
           _emailsCompany.add(TextEditingController(text: e!.email));
-      for (var p in c.phones)
-        if (p?.numero != null)
+        }
+      }
+      for (var p in c.phones) {
+        if (p?.numero != null) {
           _phonesCompany.add(TextEditingController(text: p!.numero));
+        }
+      }
       if (_emailsCompany.isEmpty) _emailsCompany.add(TextEditingController());
       if (_phonesCompany.isEmpty) _phonesCompany.add(TextEditingController());
     }
 
-    _cadastralKeyCtrl.text = conn.connectionCadastralKey ?? '';
+    _cadastralKeyCtrl.text = conn.connectionCadastralKey;
     _meterNumberCtrl.text = conn.connectionMeterNumber ?? '';
     _contractNumberCtrl.text = conn.connectionContractNumber ?? '';
     _connectionAddressCtrl.text = conn.connectionAddress;
@@ -322,8 +329,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
     _peopleNumberCtrl.text = conn.connectionPeopleNumber?.toString() ?? '4';
     _referenceCtrl.text = conn.connectionReference ?? '';
-    _sectorCtrl.text = conn.connectionSector?.toString() ?? '';
-    _accountCtrl.text = conn.connectionAccount?.toString() ?? '';
+    _sectorCtrl.text = conn.connectionSector.toString();
+    _accountCtrl.text = conn.connectionAccount.toString();
     _zoneCtrl.text = conn.connectionZone?.toString() ?? '';
     _sewerage = conn.connectionSewerage ?? true;
     _status = conn.connectionStatus ?? true;
@@ -407,17 +414,20 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     setState(() => _isGettingLocation = true);
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled)
+      if (!serviceEnabled) {
         return _showErrorSnackBar('Servicio de ubicación desactivado.');
+      }
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied)
+        if (permission == LocationPermission.denied) {
           return _showErrorSnackBar('Permiso denegado.');
+        }
       }
-      if (permission == LocationPermission.deniedForever)
+      if (permission == LocationPermission.deniedForever) {
         return _showErrorSnackBar('Permiso denegado permanentemente.');
+      }
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -633,14 +643,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
       // === PASO 2: ACOMETIDA ===
       await _updateConnection(client);
-      CustomOverlaySnackBar.show(
-        context: context,
-        message: 'Acometida actualizada',
-        type: SnackBarType.success,
-      );
-      await Future.delayed(const Duration(milliseconds: 600));
 
-      // === OBSERVACIÓN (opcional) ===
+      // === OBSERVACIÓN ===
       if (_observationDetailsCtrl.text.trim().isNotEmpty) {
         await _addObservation(client);
         CustomOverlaySnackBar.show(
@@ -666,10 +670,46 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         await Future.delayed(const Duration(milliseconds: 600));
       }
 
+      // === SUBIR IMÁGENES AL FINAL ===
+      final bloc = context.read<AddPropertyImageBloc>();
+      final state = bloc.state;
+
+      if (state is AddPropertyImagePicked && state.imagePaths.isNotEmpty) {
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Subiendo ${state.imagePaths.length} foto(s)...',
+          type: SnackBarType.info,
+        );
+
+        bloc.add(
+          UploadAllImagesEvent(
+            widget.connection.connectionId,
+            'Actualización de acometida desde móvil',
+          ),
+        );
+
+        await for (final s in bloc.stream) {
+          if (s is AddPropertyImageSuccess) {
+            CustomOverlaySnackBar.show(
+              context: context,
+              message: 'Fotos subidas',
+              type: SnackBarType.success,
+            );
+            break;
+          } else if (s is AddPropertyImageError) {
+            CustomOverlaySnackBar.show(
+              context: context,
+              message: 'Error al subir fotos: ${s.message}',
+              type: SnackBarType.error,
+            );
+            break;
+          }
+        }
+      }
+
       // === ÉXITO FINAL ===
       _showSuccess();
     } catch (e) {
-      // Detectar paso fallido
       String stepName = 'desconocido';
       int stepIndex = 0;
 
@@ -684,17 +724,15 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         stepIndex = 2;
       }
 
-      // Mostrar error con acción de reintento
       CustomOverlaySnackBar.show(
         context: context,
-        message: 'Error al actualizar $stepName',
+        message: 'Error al actualizar $stepName' + ': ${e.toString()}',
         type: SnackBarType.error,
         duration: const Duration(seconds: 5),
-        onDismissed: () {
-          // Reintentar solo el paso fallido
-          _retryStep(stepIndex, client);
-        },
+        onDismissed: () => _retryStep(stepIndex, client),
       );
+
+      debugPrint('Error al actualizar $stepName: $e');
 
       setState(() => _stepErrors[stepIndex] = e.toString());
     } finally {
@@ -747,6 +785,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     }
   }
 
+  // === USECASES ===
   Future<void> _updateNaturalPerson(http.Client client) async =>
       await UpdateCustomerUseCase(
         CustomerRepositoryImpl(
@@ -916,7 +955,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       : zone == 'ZONA 4'
       ? 4
       : 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -947,7 +985,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 _buildClientStep(),
-                _buildConnectionStep(),
+                _buildConnectionStep(), // SIN Builder, SIN BlocProvider
                 _buildPropertyStep(),
               ],
             ),
@@ -1001,32 +1039,24 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       color = Colors.white70;
     }
 
-    return GestureDetector(
-      onTap: (index <= _currentStep || hasError)
-          ? () {
-              setState(() => _currentStep = index);
-              _pageController.jumpToPage(index);
-            }
-          : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 35,
-        height: 35,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: bg,
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: bg.withOpacity(0.4),
-                    blurRadius: 16,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : [],
-        ),
-        child: Icon(icon, color: color, size: context.iconMedium),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: 35,
+      height: 35,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: bg,
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: bg.withOpacity(0.4),
+                  blurRadius: 16,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [],
       ),
+      child: Icon(icon, color: color, size: context.iconMedium),
     );
   }
 
@@ -1331,7 +1361,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               isRequired: false,
             ),
           ),
-          ImagesSection(selectedImages: _selectedImages),
+          ImagesSection(
+            connectionId: widget.connection.connectionId,
+            description: 'Actualización de acometida desde móvil',
+          ),
           GpsSection(
             latitudeCtrl: _latitudeCtrl,
             longitudeCtrl: _longitudeCtrl,

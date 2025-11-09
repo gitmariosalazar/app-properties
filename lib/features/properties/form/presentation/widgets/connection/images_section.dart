@@ -8,7 +8,6 @@ import 'package:app_properties/features/properties/form/add-img/presentation/blo
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ImagesSection extends StatefulWidget {
   final String connectionId;

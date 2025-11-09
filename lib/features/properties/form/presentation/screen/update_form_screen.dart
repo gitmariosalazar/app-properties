@@ -195,8 +195,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       if (_pageController.page == 1 && !_hasLoadedGeolocation) {
         _hasLoadedGeolocation = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final lat = double.tryParse(_latitudeCtrl.text) ?? -0.180653;
-          final lng = double.tryParse(_longitudeCtrl.text) ?? -78.467834;
+          final lat = double.tryParse(_latitudeCtrl.text) ?? 0.32069990;
+          final lng = double.tryParse(_longitudeCtrl.text) ?? 78.10616480;
           _reverseGeocode(lat, lng);
         });
       }
@@ -346,12 +346,12 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         _latitudeCtrl.text = parts[0].trim();
         _longitudeCtrl.text = parts[1].trim();
       } else {
-        _latitudeCtrl.text = '-0.180653';
-        _longitudeCtrl.text = '-78.467834';
+        _latitudeCtrl.text = '0.32069990';
+        _longitudeCtrl.text = '-78.10616480';
       }
     } else {
-      _latitudeCtrl.text = '-0.180653';
-      _longitudeCtrl.text = '-78.467834';
+      _latitudeCtrl.text = '0.32069990';
+      _longitudeCtrl.text = '-78.10616480';
     }
 
     _accuracyCtrl.text = conn.connectionAltitude?.toStringAsFixed(1) ?? '0.0';
@@ -490,8 +490,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   }
 
   void _openMap() {
-    final lat = double.tryParse(_latitudeCtrl.text) ?? -0.180653;
-    final lng = double.tryParse(_longitudeCtrl.text) ?? -78.467834;
+    final lat = double.tryParse(_latitudeCtrl.text) ?? 0.32069990;
+    final lng = double.tryParse(_longitudeCtrl.text) ?? -78.10616480;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -642,7 +642,15 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       }
 
       // === PASO 2: ACOMETIDA ===
-      await _updateConnection(client);
+      if (_cadastralKeyCtrl.text.trim().isNotEmpty) {
+        await _updateConnection(client);
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Acometida actualizada',
+          type: SnackBarType.success,
+        );
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
 
       // === OBSERVACIÓN ===
       if (_observationDetailsCtrl.text.trim().isNotEmpty) {
@@ -975,6 +983,53 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(2),
+              child: Icon(
+                Icons.close,
+                size: context.iconMedium,
+                color: AppColors.surface,
+              ),
+            ),
+            onPressed: () async {
+              final salir = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text('Salir sin guardar', style: context.titleMedium),
+                  content: Text(
+                    '¿Está seguro de que desea salir sin guardar los cambios?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                      ),
+                      child: const Text(
+                        'Salir',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (salir == true) {
+                context.go('/home'); // Siempre va a home
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

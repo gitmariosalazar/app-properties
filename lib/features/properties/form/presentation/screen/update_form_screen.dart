@@ -1,11 +1,10 @@
 // lib/features/properties/form/update/presentation/screens/update_connection_form_screen.dart
-import 'dart:io';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_event.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_state.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
-import 'package:get_it/get_it.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
+import 'package:app_properties/utils/convert_coordinates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
@@ -133,6 +132,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   final _sectorCtrl = TextEditingController();
   final _accountCtrl = TextEditingController();
   final _zoneCtrl = TextEditingController();
+  Map<String, double> _coordinatesCtrl = <String, double>{};
 
   // Valores normalizados
   String? _rateName;
@@ -194,9 +194,12 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     _pageController.addListener(() {
       if (_pageController.page == 1 && !_hasLoadedGeolocation) {
         _hasLoadedGeolocation = true;
+        Map<String, double> coords = extractCoordinates(
+          widget.connection.connectionCoordinates ?? '',
+        );
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final lat = double.tryParse(_latitudeCtrl.text) ?? 0.32069990;
-          final lng = double.tryParse(_longitudeCtrl.text) ?? 78.10616480;
+          final lat = coords['latitude'] ?? 0.32069990;
+          final lng = coords['longitude'] ?? 78.10616480;
           _reverseGeocode(lat, lng);
         });
       }
@@ -334,21 +337,17 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     _zoneCtrl.text = conn.connectionZone?.toString() ?? '';
     _sewerage = conn.connectionSewerage ?? true;
     _status = conn.connectionStatus ?? true;
+    _coordinatesCtrl = extractCoordinates(conn.connectionCoordinates ?? '');
+    _latitudeCtrl.text = _coordinatesCtrl['latitude']?.toString() ?? '';
+    _longitudeCtrl.text = _coordinatesCtrl['longitude']?.toString() ?? '';
 
     _rateName =
         _normalizeValue(conn.connectionRateName, _validRates) ?? 'COMERCIAL';
     _zoneName = _normalizeValue(conn.zoneName, _validZones) ?? 'ZONA 1';
 
     if (conn.connectionCoordinates?.isNotEmpty == true) {
-      final coords = conn.connectionCoordinates!;
-      if (coords.contains(',')) {
-        final parts = coords.split(',');
-        _latitudeCtrl.text = parts[0].trim();
-        _longitudeCtrl.text = parts[1].trim();
-      } else {
-        _latitudeCtrl.text = '0.32069990';
-        _longitudeCtrl.text = '-78.10616480';
-      }
+      _latitudeCtrl.text = _coordinatesCtrl['latitude']?.toString() ?? '';
+      _longitudeCtrl.text = _coordinatesCtrl['longitude']?.toString() ?? '';
     } else {
       _latitudeCtrl.text = '0.32069990';
       _longitudeCtrl.text = '-78.10616480';

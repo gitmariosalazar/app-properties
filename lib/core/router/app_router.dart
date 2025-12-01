@@ -93,7 +93,7 @@ class AppRouter {
           );
         },
       ),
-
+      // === INGRESO MANUAL DE PROPIEDADES (CORRECTO) ===
       GoRoute(
         path: '/manually-entry-properties',
         builder: (context, state) => BlocProvider(

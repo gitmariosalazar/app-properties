@@ -55,8 +55,8 @@ DateTime? _toDateTimeOrNull(dynamic value) {
 
 @JsonSerializable(explicitToJson: true)
 class Phone {
-  @JsonKey(name: 'telefonoid')
-  final int telefonoid;
+  @JsonKey(name: 'telefonoid', fromJson: _toIntOrNull)
+  final int? telefonoid;
 
   @JsonKey(name: 'numero')
   final String numero;
@@ -69,8 +69,8 @@ class Phone {
 
 @JsonSerializable(explicitToJson: true)
 class Email {
-  @JsonKey(name: 'correoid')
-  final int correoid;
+  @JsonKey(name: 'correoid', fromJson: _toIntOrNull)
+  final int? correoid;
 
   @JsonKey(name: 'email')
   final String email;
@@ -159,8 +159,8 @@ class Company {
   @JsonKey(name: 'parishId', fromJson: _toStringOrNull)
   final String? parishId;
 
-  @JsonKey(name: 'companyId')
-  final int companyId;
+  @JsonKey(name: 'companyId', fromJson: _toIntOrNull)
+  final int? companyId;
 
   @JsonKey(name: 'businessName')
   final String? businessName;
@@ -197,20 +197,20 @@ class Property {
   @JsonKey(name: 'propertyId', fromJson: _toStringNonNull)
   final String propertyId;
 
-  @JsonKey(name: 'propertySector')
-  final String propertySector;
+  @JsonKey(name: 'propertySector', fromJson: _toStringOrNull)
+  final String? propertySector;
 
   @JsonKey(name: 'propertyTypeId', fromJson: _toIntOrNull)
   final int? propertyTypeId;
 
-  @JsonKey(name: 'propertyTypeName')
-  final String propertyTypeName;
+  @JsonKey(name: 'propertyTypeName', fromJson: _toStringOrNull)
+  final String? propertyTypeName;
 
-  @JsonKey(name: 'propertyAddress')
-  final String propertyAddress;
+  @JsonKey(name: 'propertyAddress', fromJson: _toStringOrNull)
+  final String? propertyAddress;
 
-  @JsonKey(name: 'propertyAlleyway')
-  final String propertyAlleyway;
+  @JsonKey(name: 'propertyAlleyway', fromJson: _toStringOrNull)
+  final String? propertyAlleyway;
 
   @JsonKey(name: 'propertyAltitude', fromJson: _toDoubleOrNull)
   final double? propertyAltitude;
@@ -218,30 +218,30 @@ class Property {
   @JsonKey(name: 'propertyPrecision', fromJson: _toDoubleOrNull)
   final double? propertyPrecision;
 
-  @JsonKey(name: 'propertyReference')
+  @JsonKey(name: 'propertyReference', fromJson: _toStringOrNull)
   final String? propertyReference;
 
-  @JsonKey(name: 'propertyCoordinates')
+  @JsonKey(name: 'propertyCoordinates', fromJson: _toStringOrNull)
   final String? propertyCoordinates;
 
-  @JsonKey(name: 'propertyCadastralKey')
-  final String propertyCadastralKey;
+  @JsonKey(name: 'propertyCadastralKey', fromJson: _toStringOrNull)
+  final String? propertyCadastralKey;
 
-  @JsonKey(name: 'propertyGeometricZone')
+  @JsonKey(name: 'propertyGeometricZone', fromJson: _toStringOrNull)
   final String? propertyGeometricZone;
 
   Property({
     required this.propertyId,
-    required this.propertySector,
+    this.propertySector,
     this.propertyTypeId,
-    required this.propertyTypeName,
-    required this.propertyAddress,
-    required this.propertyAlleyway,
+    this.propertyTypeName,
+    this.propertyAddress,
+    this.propertyAlleyway,
     this.propertyAltitude,
     this.propertyPrecision,
     this.propertyReference,
     this.propertyCoordinates,
-    required this.propertyCadastralKey,
+    this.propertyCadastralKey,
     this.propertyGeometricZone,
   });
 
@@ -255,16 +255,16 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionId', fromJson: _toStringNonNull)
   final String connectionId;
 
-  @JsonKey(name: 'clientId')
-  final String clientId;
+  @JsonKey(name: 'clientId', fromJson: _toStringOrNull)
+  final String? clientId;
 
   @JsonKey(name: 'connectionRateId', fromJson: _toIntOrNull)
   final int? connectionRateId;
 
-  @JsonKey(name: 'connectionRateName')
-  final String connectionRateName;
+  @JsonKey(name: 'connectionRateName', fromJson: _toStringOrNull)
+  final String? connectionRateName;
 
-  @JsonKey(name: 'connectionMeterNumber')
+  @JsonKey(name: 'connectionMeterNumber', fromJson: _toStringOrNull)
   final String? connectionMeterNumber;
 
   @JsonKey(name: 'connectionSector', fromJson: _toIntOrNull)
@@ -273,8 +273,8 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionAccount', fromJson: _toIntOrNull)
   final int? connectionAccount;
 
-  @JsonKey(name: 'connectionCadastralKey')
-  final String connectionCadastralKey;
+  @JsonKey(name: 'connectionCadastralKey', fromJson: _toStringOrNull)
+  final String? connectionCadastralKey;
 
   @JsonKey(name: 'connectionContractNumber', fromJson: _toStringOrNull)
   final String? connectionContractNumber;
@@ -285,10 +285,10 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionStatus')
   final bool? connectionStatus;
 
-  @JsonKey(name: 'connectionAddress')
-  final String connectionAddress;
+  @JsonKey(name: 'connectionAddress', fromJson: _toStringOrNull)
+  final String? connectionAddress;
 
-  @JsonKey(name: 'connectionInstallationDate')
+  @JsonKey(name: 'connectionInstallationDate', fromJson: _toStringOrNull)
   final String? connectionInstallationDate;
 
   @JsonKey(name: 'connectionPeopleNumber', fromJson: _toIntOrNull)
@@ -297,10 +297,10 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionZone', fromJson: _toIntOrNull)
   final int? connectionZone;
 
-  @JsonKey(name: 'connectionCoordinates')
+  @JsonKey(name: 'connectionCoordinates', fromJson: _toStringOrNull)
   final String? connectionCoordinates;
 
-  @JsonKey(name: 'connectionReference')
+  @JsonKey(name: 'connectionReference', fromJson: _toStringOrNull)
   final String? connectionReference;
 
   @JsonKey(name: 'connectionMetadata')
@@ -315,10 +315,10 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionGeolocationDate', fromJson: _toDateTimeOrNull)
   final DateTime? connectionGeolocationDate;
 
-  @JsonKey(name: 'connectionGeometricZone')
+  @JsonKey(name: 'connectionGeometricZone', fromJson: _toStringOrNull)
   final String? connectionGeometricZone;
 
-  @JsonKey(name: 'propertyCadastralKey')
+  @JsonKey(name: 'propertyCadastralKey', fromJson: _toStringOrNull)
   final String? propertyCadastralKey;
 
   @JsonKey(name: 'zoneId', fromJson: _toIntOrNull)
@@ -327,7 +327,7 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'zoneCode', fromJson: _toStringOrNull)
   final String? zoneCode;
 
-  @JsonKey(name: 'zoneName')
+  @JsonKey(name: 'zoneName', fromJson: _toStringOrNull)
   final String? zoneName;
 
   @JsonKey(name: 'person')
@@ -341,17 +341,17 @@ class ConnectionWithPropertiesResponse {
 
   ConnectionWithPropertiesResponse({
     required this.connectionId,
-    required this.clientId,
+    this.clientId,
     this.connectionRateId,
-    required this.connectionRateName,
+    this.connectionRateName,
     this.connectionMeterNumber,
     this.connectionSector,
     this.connectionAccount,
-    required this.connectionCadastralKey,
+    this.connectionCadastralKey,
     this.connectionContractNumber,
     this.connectionSewerage,
     this.connectionStatus,
-    required this.connectionAddress,
+    this.connectionAddress,
     this.connectionInstallationDate,
     this.connectionPeopleNumber,
     this.connectionZone,

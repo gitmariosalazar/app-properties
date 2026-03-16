@@ -1,5 +1,7 @@
 import 'package:app_properties/config/environments/environment.dart';
+import 'package:app_properties/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app_properties/features/properties/list/data/model/schemas/dto/response/connection_with_properties_response.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_properties/shared/api/response/api_response.dart';
 import 'dart:convert';
@@ -12,19 +14,43 @@ abstract class RemoteConnectionWithPropertiesDataSource {
 class RemoteConnectionWithPropertiesDataSourceImpl
     implements RemoteConnectionWithPropertiesDataSource {
   final http.Client client;
+  final AuthLocalDataSource authLocalDataSource;
+
   final String baseUrl = Environment.apiUrl;
 
-  RemoteConnectionWithPropertiesDataSourceImpl(this.client);
+  RemoteConnectionWithPropertiesDataSourceImpl(
+    this.client,
+    this.authLocalDataSource,
+  );
 
   @override
   Future<ConnectionWithPropertiesResponse>
   fetchConnectionWithPropertiesByCadastralKey(String cadastralKey) async {
+    final token = await authLocalDataSource.getToken();
     final response = await client.get(
       Uri.parse(
         '$baseUrl/connections/find-connection-with-property-by-cadastral-key/$cadastralKey',
       ),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
     );
+
+    debugPrint('Response status: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
+
+    if (token == null) {
+      throw Exception('Token no encontrado');
+    }
+
+    if (token.isEmpty) {
+      throw Exception('Token no encontrado');
+    }
+
+    if (response.statusCode == 401) {
+      throw Exception('Token no autorizado');
+    }
 
     // 1. Verifica HTTP status
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -33,24 +59,30 @@ class RemoteConnectionWithPropertiesDataSourceImpl
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
 
-    final apiResponse = ApiResponse<ConnectionWithPropertiesResponse>.fromJson(
-      json,
-      (data) => ConnectionWithPropertiesResponse.fromJson(
-        data as Map<String, dynamic>,
-      ),
-    );
+    try {
+      final apiResponse =
+          ApiResponse<ConnectionWithPropertiesResponse>.fromJson(json, (data) {
+            return ConnectionWithPropertiesResponse.fromJson(
+              data as Map<String, dynamic>,
+            );
+          });
 
-    // 2. Verifica el status_code del JSON (201 es éxito)
-    if (apiResponse.statusCode < 200 || apiResponse.statusCode >= 300) {
-      throw Exception(apiResponse.message.join(', '));
+      // 2. Verifica el status_code del JSON (201 es éxito)
+      if (apiResponse.statusCode < 200 || apiResponse.statusCode >= 300) {
+        throw Exception(apiResponse.message.join(', '));
+      }
+
+      if (apiResponse.data == null) {
+        throw Exception(
+          'No se encontró conexión para la clave catastral: $cadastralKey',
+        );
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      debugPrint('Error parseando ConnectionWithPropertiesResponse: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
     }
-
-    if (apiResponse.data == null) {
-      throw Exception(
-        'No se encontró conexión para la clave catastral: $cadastralKey',
-      );
-    }
-
-    return apiResponse.data!;
   }
 }

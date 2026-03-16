@@ -30,7 +30,7 @@ UpdateConnectionRequest _$UpdateConnectionRequestFromJson(
   connectionPrecision: (json['connectionPrecision'] as num?)?.toDouble() ?? 0.0,
   connectionGeolocationDate: json['connectionGeolocationDate'] as String? ?? '',
   connectionGeometricZone: json['connectionGeometricZone'] as String? ?? '',
-  propertyCadastralKey: json['propertyCadastralKey'] as String,
+  propertyCadastralKey: json['propertyCadastralKey'] as String?,
 );
 
 Map<String, dynamic> _$UpdateConnectionRequestToJson(

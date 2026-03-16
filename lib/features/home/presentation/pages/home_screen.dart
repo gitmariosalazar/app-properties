@@ -36,6 +36,16 @@ class HomeScreen extends StatelessWidget {
             tooltip: "Inicio",
           ),
         ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: isTablet ? 12.0 : 8.0),
+            child: IconButton(
+              onPressed: () => context.push('/profile'),
+              icon: Icon(Icons.person_rounded, size: isTablet ? 34 : 28),
+              tooltip: "Mi Perfil",
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

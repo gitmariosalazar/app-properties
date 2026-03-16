@@ -13,7 +13,7 @@ extension CompanyDtoMapper on dto.Company {
       country: country,
       clientId: clientId,
       parishId: parishId,
-      companyId: companyId,
+      companyId: companyId ?? 0,
       businessName: businessName,
       commercialName: commercialName,
       emails: emails.map((e) => e?.toEntity()).toList(),

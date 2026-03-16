@@ -12,6 +12,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:app_properties/core/di/injection.dart';
+import 'package:app_properties/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/components/button/widget_button.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
@@ -796,7 +798,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   Future<void> _updateNaturalPerson(http.Client client) async =>
       await UpdateCustomerUseCase(
         CustomerRepositoryImpl(
-          remoteDataSource: CustomerRemoteDataSource(client: client),
+          remoteDataSource: CustomerRemoteDataSource(
+            client: client,
+            authLocalDataSource: sl<AuthLocalDataSource>(),
+          ),
         ),
       )(
         customerId: _identificationCtrl.text,
@@ -826,7 +831,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   Future<void> _updateCompany(http.Client client) async =>
       await UpdateCompanyUseCase(
         CompanyRepositoryImpl(
-          remoteDataSource: CompanyRemoteDataSource(client: client),
+          remoteDataSource: CompanyRemoteDataSource(
+            client: client,
+            authLocalDataSource: sl<AuthLocalDataSource>(),
+          ),
         ),
       )(
         companyRuc: _rucCtrl.text,
@@ -856,7 +864,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
     await UpdateConnectionUseCase(
       ConnectionRepositoryImpl(
-        remoteDataSource: ConnectionRemoteDataSource(client: client),
+        remoteDataSource: ConnectionRemoteDataSource(
+          client: client,
+          authLocalDataSource: sl<AuthLocalDataSource>(),
+        ),
       ),
     )(
       connectionId: widget.connection.connectionId,
@@ -904,6 +915,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         ObservationConnectionRepositoryImpl(
           remoteDataSource: ObservationConnectionRemoteDataSource(
             client: client,
+            authLocalDataSource: sl<AuthLocalDataSource>(),
           ),
         ),
       )(
@@ -917,7 +929,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   Future<void> _updateProperty(http.Client client) async =>
       await UpdatePropertyUseCase(
         PropertyRepositoryImpl(
-          remoteDataSource: PropertyRemoteDataSource(client: client),
+          remoteDataSource: PropertyRemoteDataSource(
+            client: client,
+            authLocalDataSource: sl<AuthLocalDataSource>(),
+          ),
         ),
       )(
         cadastralKey: _propertyCadastralKeyCtrl.text,
@@ -1474,7 +1489,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     child: Form(
       key: _formKeys[2],
       child: PropertyForm(
-        cadastralKeyCtrl: _propertyCadastralKeyCtrl,
+        propertyCadastralKeyCtrl: _propertyCadastralKeyCtrl,
         propertyAddressCtrl: _propertyAddressCtrl,
         alleywayCtrl: _alleywayCtrl,
         landAreaCtrl: _landAreaCtrl,

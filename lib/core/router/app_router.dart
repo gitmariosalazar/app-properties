@@ -1,3 +1,4 @@
+import 'package:app_properties/features/profile/presentation/pages/profile_screen.dart';
 import 'package:app_properties/features/properties/list/presentation/manually/blocs/index.dart';
 import 'package:app_properties/features/properties/list/presentation/scan/pages/scan_screen.dart';
 import 'package:flutter/material.dart';
@@ -100,6 +101,10 @@ class AppRouter {
           create: (context) => di.sl<ManuallyConnectionWithPropertiesBloc>(),
           child: const ManualEntryConnectionWithPropertiesScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

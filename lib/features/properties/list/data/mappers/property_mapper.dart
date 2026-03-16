@@ -8,16 +8,16 @@ extension PropertyDtoMapper on dto.Property {
   PropertyEntity toEntity() {
     return PropertyEntity(
       propertyId: propertyId,
-      propertySector: propertySector,
+      propertySector: propertySector ?? '',
       propertyTypeId: propertyTypeId ?? 0,
-      propertyTypeName: propertyTypeName,
-      propertyAddress: propertyAddress,
-      propertyAlleyway: propertyAlleyway,
+      propertyTypeName: propertyTypeName ?? '',
+      propertyAddress: propertyAddress ?? '',
+      propertyAlleyway: propertyAlleyway ?? '',
       propertyAltitude: propertyAltitude,
       propertyPrecision: propertyPrecision,
       propertyReference: propertyReference,
       propertyCoordinates: propertyCoordinates,
-      propertyCadastralKey: propertyCadastralKey,
+      propertyCadastralKey: propertyCadastralKey ?? '',
       propertyGeometricZone: propertyGeometricZone,
     );
   }

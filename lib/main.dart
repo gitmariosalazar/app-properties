@@ -1,3 +1,4 @@
+import 'package:app_properties/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => di.sl<AuthBloc>()),
+        BlocProvider(create: (_) => di.sl<LoginCubit>()..checkAuthStatus()),
         BlocProvider(create: (_) => di.sl<AddPropertyImageBloc>()),
       ],
       child: MaterialApp.router(

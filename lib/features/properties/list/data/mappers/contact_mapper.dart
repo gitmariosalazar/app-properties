@@ -4,12 +4,12 @@ import 'package:app_properties/features/properties/list/data/model/schemas/dto/r
 
 extension PhoneDtoMapper on dto.Phone {
   PhoneEntity toEntity() {
-    return PhoneEntity(telefonoid, numero);
+    return PhoneEntity(telefonoid ?? 0, numero);
   }
 }
 
 extension EmailDtoMapper on dto.Email {
   EmailEntity toEntity() {
-    return EmailEntity(correoid, email);
+    return EmailEntity(correoid ?? 0, email);
   }
 }

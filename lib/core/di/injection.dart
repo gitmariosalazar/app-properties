@@ -1,3 +1,7 @@
+import 'package:app_properties/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:app_properties/features/auth/domain/usecases/check_auth_status_usecase.dart';
+import 'package:app_properties/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:app_properties/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:app_properties/features/properties/form/add-img/data/datasources/property_image_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/add-img/data/repositories/property_image_repository_impl.dart';
 import 'package:app_properties/features/properties/form/add-img/domain/repositories/property_image_repository.dart';
@@ -48,11 +52,24 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(client: sl()),
+  );
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(localDataSource: sl()),
+    () => AuthRepositoryImpl(localDataSource: sl(), remoteDataSource: sl()),
   );
   sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
-  sl.registerFactory(() => AuthBloc(loginUseCase: sl()));
+  sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton<CheckAuthStatusUseCase>(
+    () => CheckAuthStatusUseCase(sl()),
+  );
+  sl.registerFactory(
+    () => LoginCubit(
+      loginUseCase: sl(),
+      logoutUseCase: sl(),
+      checkAuthStatusUseCase: sl(),
+    ),
+  );
 
   // ====================
   // SCAN
@@ -101,7 +118,10 @@ Future<void> init() async {
 
   // 2. DATA SOURCE → PASA http.Client
   sl.registerLazySingleton<RemoteConnectionWithPropertiesDataSource>(
-    () => RemoteConnectionWithPropertiesDataSourceImpl(sl<http.Client>()),
+    () => RemoteConnectionWithPropertiesDataSourceImpl(
+      sl<http.Client>(),
+      sl<AuthLocalDataSource>(),
+    ),
   );
 
   // 3. REPOSITORIO

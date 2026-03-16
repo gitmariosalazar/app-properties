@@ -6,7 +6,7 @@ import 'package:app_properties/components/common/form_card.dart';
 import 'package:app_properties/features/properties/list/domain/entities/property.dart';
 
 class PropertyForm extends StatefulWidget {
-  final TextEditingController cadastralKeyCtrl;
+  final TextEditingController propertyCadastralKeyCtrl;
   final TextEditingController propertyAddressCtrl;
   final TextEditingController alleywayCtrl;
   final TextEditingController landAreaCtrl;
@@ -19,7 +19,7 @@ class PropertyForm extends StatefulWidget {
 
   const PropertyForm({
     super.key,
-    required this.cadastralKeyCtrl,
+    required this.propertyCadastralKeyCtrl,
     required this.propertyAddressCtrl,
     required this.alleywayCtrl,
     required this.landAreaCtrl,
@@ -45,7 +45,7 @@ class _PropertyFormState extends State<PropertyForm> {
   }
 
   void _detectInitialSelection() {
-    final key = widget.cadastralKeyCtrl.text;
+    final key = widget.propertyCadastralKeyCtrl.text;
     if (key.isNotEmpty && key != 'N/A' && widget.properties != null) {
       final match = widget.properties!.firstWhere(
         (p) => p.propertyCadastralKey == key,
@@ -63,7 +63,7 @@ class _PropertyFormState extends State<PropertyForm> {
     });
 
     // Actualizar todos los campos
-    widget.cadastralKeyCtrl.text = property.propertyCadastralKey;
+    widget.propertyCadastralKeyCtrl.text = property.propertyCadastralKey;
     widget.propertyAddressCtrl.text = property.propertyAddress;
     widget.alleywayCtrl.text = property.propertyAlleyway;
     widget.landAreaCtrl.text = '';
@@ -96,7 +96,7 @@ class _PropertyFormState extends State<PropertyForm> {
         children: [
           // Clave Catastral
           CustomTextField(
-            controller: widget.cadastralKeyCtrl,
+            controller: widget.propertyCadastralKeyCtrl,
             label: 'Clave Catastral',
             icon: _selectedProperty != null
                 ? Icons.check_circle

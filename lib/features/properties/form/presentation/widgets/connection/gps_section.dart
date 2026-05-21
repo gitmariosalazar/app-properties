@@ -51,13 +51,6 @@ class _GpsSectionState extends State<GpsSection>
   bool get wantKeepAlive => true; // MANTIENE EL ESTADO
 
   @override
-  void initState() {
-    super.initState();
-    // Opcional: Puedes forzar una actualización si ya hay datos
-    // Pero el padre ya llama a _reverseGeocode
-  }
-
-  @override
   Widget build(BuildContext context) {
     // OBLIGATORIO para AutomaticKeepAliveClientMixin
     super.build(context);

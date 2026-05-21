@@ -1,5 +1,4 @@
 // lib/features/properties/form/add-img/presentation/utils/submit_property_images.dart
-import 'dart:io';
 
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_event.dart';

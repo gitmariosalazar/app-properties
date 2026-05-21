@@ -159,7 +159,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

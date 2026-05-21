@@ -71,7 +71,7 @@ class TitledCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (bottomRightIcon != null) bottomRightIcon!,
+                ?bottomRightIcon,
               ],
             ),
           ),

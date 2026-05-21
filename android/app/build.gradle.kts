@@ -14,12 +14,32 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+
+    // 1. AGREGA ESTO: Configuración de firmas antes de los Build Types
+    signingConfigs {
+        val keystoreProperties = Properties()
+        val keystorePropertiesFile = rootProject.file("key.properties")
+        
+        if (keystorePropertiesFile.exists()) {
+            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+        }
+
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            // Asegúrate de que la ruta en key.properties sea correcta (ej: ./upload-keystore.jks)
+            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
     }
 
     defaultConfig {
@@ -30,34 +50,35 @@ android {
         versionName = flutter.versionName
     }
 
-    // === FLAVORS ===
     flavorDimensions += "app"
     productFlavors {
         create("dev") {
             dimension = "app"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "Scan App DEV")
-            resValue("string", "google_maps_api_key", googleMapsApiKey("dev"))
+            resValue("string", "app_name", "Property App DEV")
+            resValue("string", "google_maps_key", googleMapsApiKey("dev"))
         }
         create("prod") {
             dimension = "app"
-            resValue("string", "app_name", "Scan App")
-            resValue("string", "google_maps_api_key", googleMapsApiKey("prod"))
+            resValue("string", "app_name", "Property App")
+            resValue("string", "google_maps_key", googleMapsApiKey("prod"))
         }
     }
 
-    // === BUILD TYPES ===
     buildTypes {
-        debug {
+        getByName("debug") {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             isDebuggable = true
-        }
-        release {
-            isMinifyEnabled = false
-            isShrinkResources = false  // ← AÑADIDO: DESACTIVADO
+            // Usar firma de debug por defecto
             signingConfig = signingConfigs.getByName("debug")
+        }
+        getByName("release") {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            // 2. CORRECCIÓN: Referencia correcta en Kotlin DSL
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -66,30 +87,22 @@ android {
     }
 }
 
-// === LEE .env DESDE LA RAÍZ DEL PROYECTO FLUTTER (NO DESDE android/) ===
 fun googleMapsApiKey(flavor: String): String {
     val fileName = if (flavor == "dev") ".env.dev" else ".env"
-    // Usa projectDir del proyecto raíz (app_properties), NO de android
-    val rootProjectDir = project.rootProject.projectDir.parentFile
-    val envFile = rootProjectDir.resolve(fileName)
+    // 3. MEJORA: Ruta más robusta para encontrar el .env en la raíz de Flutter
+    val envFile = project.rootProject.file("../$fileName")
 
     if (!envFile.exists()) {
-        println("Warning: Archivo $fileName no encontrado en $rootProjectDir. Usando clave por defecto.")
+        println("❌ Warning: Archivo $fileName no encontrado en ${envFile.absolutePath}")
         return "MISSING_KEY"
     }
 
     return try {
         val props = Properties()
-        FileInputStream(envFile).use { input ->
-            props.load(input)
-        }
-        val key = props.getProperty("API_KEY_GOOGLE_MAPS")
+        envFile.inputStream().use { props.load(it) }
+        val key = props.getProperty("GOOGLE_MAPS_API_KEY")
         if (key.isNullOrBlank()) "MISSING_KEY" else key.trim()
-    } catch (e: IOException) {
-        println("Error al leer $fileName: ${e.message}")
-        "MISSING_KEY"
     } catch (e: Exception) {
-        println("Error inesperado: ${e.message}")
         "MISSING_KEY"
     }
 }

@@ -49,6 +49,19 @@ DateTime? _toDateTimeOrNull(dynamic value) {
   return null;
 }
 
+/// Convierte a bool? — acepta bool, String ('true','false','1','0') e int (1, 0)
+bool? _toBoolOrNull(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value;
+  if (value is int) return value != 0;
+  if (value is String) {
+    final lower = value.toLowerCase();
+    if (lower == 'true' || lower == '1') return true;
+    if (lower == 'false' || lower == '0') return false;
+  }
+  return null;
+}
+
 /// ===================================================
 /// MODELOS
 /// ===================================================
@@ -59,9 +72,9 @@ class Phone {
   final int? telefonoid;
 
   @JsonKey(name: 'numero')
-  final String numero;
+  final String? numero;
 
-  Phone({required this.telefonoid, required this.numero});
+  Phone({this.telefonoid, this.numero});
 
   factory Phone.fromJson(Map<String, dynamic> json) => _$PhoneFromJson(json);
   Map<String, dynamic> toJson() => _$PhoneToJson(this);
@@ -73,9 +86,9 @@ class Email {
   final int? correoid;
 
   @JsonKey(name: 'email')
-  final String email;
+  final String? email;
 
-  Email({required this.correoid, required this.email});
+  Email({this.correoid, this.email});
 
   factory Email.fromJson(Map<String, dynamic> json) => _$EmailFromJson(json);
   Map<String, dynamic> toJson() => _$EmailToJson(this);
@@ -107,7 +120,7 @@ class Person {
   @JsonKey(name: 'birthDate')
   final String? birthDate;
 
-  @JsonKey(name: 'isDeceased')
+  @JsonKey(name: 'isDeceased', fromJson: _toBoolOrNull)
   final bool? isDeceased;
 
   @JsonKey(name: 'professionId', fromJson: _toIntOrNull)
@@ -180,7 +193,7 @@ class Company {
     this.country,
     required this.clientId,
     this.parishId,
-    required this.companyId,
+    this.companyId,
     this.businessName,
     this.commercialName,
     required this.emails,
@@ -197,20 +210,20 @@ class Property {
   @JsonKey(name: 'propertyId', fromJson: _toStringNonNull)
   final String propertyId;
 
-  @JsonKey(name: 'propertySector', fromJson: _toStringOrNull)
-  final String? propertySector;
+  @JsonKey(name: 'propertySector')
+  final String propertySector;
 
   @JsonKey(name: 'propertyTypeId', fromJson: _toIntOrNull)
   final int? propertyTypeId;
 
-  @JsonKey(name: 'propertyTypeName', fromJson: _toStringOrNull)
-  final String? propertyTypeName;
+  @JsonKey(name: 'propertyTypeName')
+  final String propertyTypeName;
 
-  @JsonKey(name: 'propertyAddress', fromJson: _toStringOrNull)
-  final String? propertyAddress;
+  @JsonKey(name: 'propertyAddress')
+  final String propertyAddress;
 
-  @JsonKey(name: 'propertyAlleyway', fromJson: _toStringOrNull)
-  final String? propertyAlleyway;
+  @JsonKey(name: 'propertyAlleyway')
+  final String propertyAlleyway;
 
   @JsonKey(name: 'propertyAltitude', fromJson: _toDoubleOrNull)
   final double? propertyAltitude;
@@ -218,30 +231,30 @@ class Property {
   @JsonKey(name: 'propertyPrecision', fromJson: _toDoubleOrNull)
   final double? propertyPrecision;
 
-  @JsonKey(name: 'propertyReference', fromJson: _toStringOrNull)
+  @JsonKey(name: 'propertyReference')
   final String? propertyReference;
 
-  @JsonKey(name: 'propertyCoordinates', fromJson: _toStringOrNull)
+  @JsonKey(name: 'propertyCoordinates')
   final String? propertyCoordinates;
 
-  @JsonKey(name: 'propertyCadastralKey', fromJson: _toStringOrNull)
-  final String? propertyCadastralKey;
+  @JsonKey(name: 'propertyCadastralKey')
+  final String propertyCadastralKey;
 
-  @JsonKey(name: 'propertyGeometricZone', fromJson: _toStringOrNull)
+  @JsonKey(name: 'propertyGeometricZone')
   final String? propertyGeometricZone;
 
   Property({
     required this.propertyId,
-    this.propertySector,
+    required this.propertySector,
     this.propertyTypeId,
-    this.propertyTypeName,
-    this.propertyAddress,
-    this.propertyAlleyway,
+    required this.propertyTypeName,
+    required this.propertyAddress,
+    required this.propertyAlleyway,
     this.propertyAltitude,
     this.propertyPrecision,
     this.propertyReference,
     this.propertyCoordinates,
-    this.propertyCadastralKey,
+    required this.propertyCadastralKey,
     this.propertyGeometricZone,
   });
 
@@ -255,16 +268,16 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionId', fromJson: _toStringNonNull)
   final String connectionId;
 
-  @JsonKey(name: 'clientId', fromJson: _toStringOrNull)
-  final String? clientId;
+  @JsonKey(name: 'clientId')
+  final String clientId;
 
   @JsonKey(name: 'connectionRateId', fromJson: _toIntOrNull)
   final int? connectionRateId;
 
-  @JsonKey(name: 'connectionRateName', fromJson: _toStringOrNull)
-  final String? connectionRateName;
+  @JsonKey(name: 'connectionRateName')
+  final String connectionRateName;
 
-  @JsonKey(name: 'connectionMeterNumber', fromJson: _toStringOrNull)
+  @JsonKey(name: 'connectionMeterNumber')
   final String? connectionMeterNumber;
 
   @JsonKey(name: 'connectionSector', fromJson: _toIntOrNull)
@@ -273,22 +286,22 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionAccount', fromJson: _toIntOrNull)
   final int? connectionAccount;
 
-  @JsonKey(name: 'connectionCadastralKey', fromJson: _toStringOrNull)
-  final String? connectionCadastralKey;
+  @JsonKey(name: 'connectionCadastralKey')
+  final String connectionCadastralKey;
 
   @JsonKey(name: 'connectionContractNumber', fromJson: _toStringOrNull)
   final String? connectionContractNumber;
 
-  @JsonKey(name: 'connectionSewerage')
+  @JsonKey(name: 'connectionSewerage', fromJson: _toBoolOrNull)
   final bool? connectionSewerage;
 
-  @JsonKey(name: 'connectionStatus')
+  @JsonKey(name: 'connectionStatus', fromJson: _toBoolOrNull)
   final bool? connectionStatus;
 
-  @JsonKey(name: 'connectionAddress', fromJson: _toStringOrNull)
-  final String? connectionAddress;
+  @JsonKey(name: 'connectionAddress')
+  final String connectionAddress;
 
-  @JsonKey(name: 'connectionInstallationDate', fromJson: _toStringOrNull)
+  @JsonKey(name: 'connectionInstallationDate')
   final String? connectionInstallationDate;
 
   @JsonKey(name: 'connectionPeopleNumber', fromJson: _toIntOrNull)
@@ -297,10 +310,10 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionZone', fromJson: _toIntOrNull)
   final int? connectionZone;
 
-  @JsonKey(name: 'connectionCoordinates', fromJson: _toStringOrNull)
+  @JsonKey(name: 'connectionCoordinates')
   final String? connectionCoordinates;
 
-  @JsonKey(name: 'connectionReference', fromJson: _toStringOrNull)
+  @JsonKey(name: 'connectionReference')
   final String? connectionReference;
 
   @JsonKey(name: 'connectionMetadata')
@@ -315,10 +328,10 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionGeolocationDate', fromJson: _toDateTimeOrNull)
   final DateTime? connectionGeolocationDate;
 
-  @JsonKey(name: 'connectionGeometricZone', fromJson: _toStringOrNull)
+  @JsonKey(name: 'connectionGeometricZone')
   final String? connectionGeometricZone;
 
-  @JsonKey(name: 'propertyCadastralKey', fromJson: _toStringOrNull)
+  @JsonKey(name: 'propertyCadastralKey')
   final String? propertyCadastralKey;
 
   @JsonKey(name: 'zoneId', fromJson: _toIntOrNull)
@@ -327,7 +340,7 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'zoneCode', fromJson: _toStringOrNull)
   final String? zoneCode;
 
-  @JsonKey(name: 'zoneName', fromJson: _toStringOrNull)
+  @JsonKey(name: 'zoneName')
   final String? zoneName;
 
   @JsonKey(name: 'person')
@@ -341,17 +354,17 @@ class ConnectionWithPropertiesResponse {
 
   ConnectionWithPropertiesResponse({
     required this.connectionId,
-    this.clientId,
+    required this.clientId,
     this.connectionRateId,
-    this.connectionRateName,
+    required this.connectionRateName,
     this.connectionMeterNumber,
     this.connectionSector,
     this.connectionAccount,
-    this.connectionCadastralKey,
+    required this.connectionCadastralKey,
     this.connectionContractNumber,
     this.connectionSewerage,
     this.connectionStatus,
-    this.connectionAddress,
+    required this.connectionAddress,
     this.connectionInstallationDate,
     this.connectionPeopleNumber,
     this.connectionZone,

@@ -105,7 +105,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   int _civilStatus = 1;
   int _professionId = 1;
   String _originCountry = 'ECU';
-  String _identificationType = 'CED';
+  final String _identificationType = 'CED';
   String _parishId = '100150';
   bool _deceased = false;
 
@@ -119,7 +119,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
   String _companyParishId = '1';
   String _companyCountry = 'ECU';
-  String _identificationTypeCompany = 'RUC';
+  final String _identificationTypeCompany = 'RUC';
 
   // Acometida
   final _cadastralKeyCtrl = TextEditingController();
@@ -259,7 +259,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       _observationConnectionIdCtrl,
       _observationTitleCtrl,
     ];
-    for (var c in controllers) c.dispose();
+    for (var c in controllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -735,7 +737,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
       CustomOverlaySnackBar.show(
         context: context,
-        message: 'Error al actualizar $stepName' + ': ${e.toString()}',
+        message:
+            'Error al actualizar $stepName'
+            ': ${e.toString()}',
         type: SnackBarType.error,
         duration: const Duration(seconds: 5),
         onDismissed: () => _retryStep(stepIndex, client),
@@ -1346,7 +1350,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _validRates.contains(_rateName)
+                        initialValue: _validRates.contains(_rateName)
                             ? _rateName
                             : null,
                         hint: const Text('Tarifa'),
@@ -1368,7 +1372,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                     context.hSpace(0.02),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _validZones.contains(_zoneName)
+                        initialValue: _validZones.contains(_zoneName)
                             ? _zoneName
                             : null,
                         hint: const Text('Zona'),
@@ -1568,7 +1572,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
         contentPadding: EdgeInsets.symmetric(horizontal: context.smallSpacing),
         dense: true,
         shape: RoundedRectangleBorder(

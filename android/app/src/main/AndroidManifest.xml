@@ -16,6 +16,9 @@
 
     <application android:label="@string/app_name" android:name="${applicationName}" android:icon="@mipmap/launcher_icon">
 
+        <!-- ✅ AQUÍ ES DONDE DEBE IR -->
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key" />
+
         <!-- Main Activity -->
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
 
@@ -29,9 +32,6 @@
 
         <!-- Flutter Embedding -->
         <meta-data android:name="flutterEmbedding" android:value="2" />
-
-        <!-- Google Maps API Key -->
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_api_key" />
 
     </application>
 

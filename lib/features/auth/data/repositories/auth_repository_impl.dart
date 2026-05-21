@@ -19,12 +19,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> login(
-    String username_or_email,
+    String usernameOrEmail,
     String password,
   ) async {
     try {
       final authResponse = await remoteDataSource.login(
-        username_or_email,
+        usernameOrEmail,
         password,
       );
       debugPrint('AuthResponse: $authResponse');

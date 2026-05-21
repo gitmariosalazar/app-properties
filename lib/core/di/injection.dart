@@ -15,7 +15,6 @@ import 'package:app_properties/features/auth/data/datasources/auth_local_datasou
 import 'package:app_properties/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:app_properties/features/auth/domain/repositories/auth_repository.dart';
 import 'package:app_properties/features/auth/domain/usecases/login_usecase.dart';
-import 'package:app_properties/features/auth/presentation/bloc/auth_bloc.dart';
 
 // === OBSERVATIONS ===
 import 'package:app_properties/features/observations/data/datasources/observations_datasource.dart';

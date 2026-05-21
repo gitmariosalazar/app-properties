@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_properties/core/di/injection.dart' as di;
 import 'package:app_properties/core/router/app_router.dart';
 import 'package:app_properties/config/environments/environment.dart';
-import 'package:app_properties/features/auth/presentation/bloc/auth_bloc.dart';
 
 // 1. RouteObserver global
 final RouteObserver<ModalRoute<void>> routeObserver =
@@ -17,7 +16,7 @@ const String _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 3. Carga el entorno correcto (API_URL desde assets/.env)
+  // 3. Carga el entorno correcto (API_URL desde .env)
   final envType = _flavor == 'dev' ? EnvironmentType.dev : EnvironmentType.prod;
   await Environment.init(env: envType);
 
@@ -44,7 +43,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<AddPropertyImageBloc>()),
       ],
       child: MaterialApp.router(
-        title: 'Scan App',
+        title: 'Property App',
         debugShowCheckedModeBanner: _flavor == 'dev', // Solo en dev
         theme: ThemeData(
           primarySwatch: Colors.blue,

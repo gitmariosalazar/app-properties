@@ -122,7 +122,7 @@ class DialogUtils {
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.6),
       transitionDuration: const Duration(milliseconds: 280),
-      pageBuilder: (context, _, __) => const SizedBox(),
+      pageBuilder: (context, _, _) => const SizedBox(),
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
           opacity: anim1,

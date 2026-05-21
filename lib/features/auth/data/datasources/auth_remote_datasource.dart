@@ -6,7 +6,7 @@ import 'package:app_properties/features/auth/data/models/auth_response_model.dar
 import 'package:http/http.dart' as http;
 
 abstract class AuthRemoteDataSource {
-  Future<AuthResponseModel> login(String username_or_email, String password);
+  Future<AuthResponseModel> login(String usernameOrEmail, String password);
   Future<void> logout();
 }
 
@@ -18,7 +18,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<AuthResponseModel> login(
-    String username_or_email,
+    String usernameOrEmail,
     String password,
   ) async {
     final uri = Uri.parse('$baseUrl/auth/signin');
@@ -26,7 +26,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'username_or_email': username_or_email,
+        'username_or_email': usernameOrEmail,
         'password': password,
       }),
     );

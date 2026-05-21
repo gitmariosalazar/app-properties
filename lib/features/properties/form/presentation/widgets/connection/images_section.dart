@@ -64,7 +64,7 @@ class _ImagesSectionState extends State<ImagesSection> {
                 return ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: imagePaths.length + 1,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (_, _) =>
                       SizedBox(width: context.smallSpacing),
                   itemBuilder: (context, index) {
                     if (index == imagePaths.length) {

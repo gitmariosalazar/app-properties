@@ -7,47 +7,47 @@ part 'update_connection_request.g.dart';
 class UpdateConnectionRequest {
   final String connectionId;
   final String clientId;
-  final int connectionRateId;
+  final int? connectionRateId;
   final String connectionRateName;
-  final String connectionMeterNumber;
-  final String connectionContractNumber;
-  final bool connectionSewerage;
-  final bool connectionStatus;
+  final String? connectionMeterNumber;
+  final String? connectionContractNumber;
+  final bool? connectionSewerage;
+  final bool? connectionStatus;
   final String connectionAddress;
-  final String connectionInstallationDate;
-  final int connectionPeopleNumber;
-  final int connectionZone;
+  final String? connectionInstallationDate;
+  final int? connectionPeopleNumber;
+  final int? connectionZone;
   final double longitude;
   final double latitude;
-  final String connectionReference;
-  final Map<String, dynamic> connectionMetaData;
-  final double connectionAltitude;
-  final double connectionPrecision;
-  final String connectionGeolocationDate;
-  final String connectionGeometricZone;
+  final String? connectionReference;
+  final Map<String, dynamic>? connectionMetaData;
+  final double? connectionAltitude;
+  final double? connectionPrecision;
+  final String? connectionGeolocationDate;
+  final String? connectionGeometricZone;
   final String? propertyCadastralKey;
 
   UpdateConnectionRequest({
     required this.connectionId,
     required this.clientId,
-    required this.connectionRateId,
+    this.connectionRateId,
     required this.connectionRateName,
-    required this.connectionMeterNumber,
-    required this.connectionContractNumber,
-    required this.connectionSewerage,
-    required this.connectionStatus,
+    this.connectionMeterNumber,
+    this.connectionContractNumber,
+    this.connectionSewerage,
+    this.connectionStatus,
     required this.connectionAddress,
-    required this.connectionInstallationDate,
-    required this.connectionPeopleNumber,
-    required this.connectionZone,
+    this.connectionInstallationDate,
+    this.connectionPeopleNumber,
+    this.connectionZone,
     required this.longitude,
     required this.latitude,
-    required this.connectionReference,
-    this.connectionMetaData = const {},
-    this.connectionAltitude = 0.0,
-    this.connectionPrecision = 0.0,
-    this.connectionGeolocationDate = '',
-    this.connectionGeometricZone = '',
+    this.connectionReference,
+    this.connectionMetaData,
+    this.connectionAltitude,
+    this.connectionPrecision,
+    this.connectionGeolocationDate,
+    this.connectionGeometricZone,
     required this.propertyCadastralKey,
   });
 

@@ -5,13 +5,13 @@ enum EnvironmentType { dev, prod }
 class Environment {
   static Future<void> init({EnvironmentType env = EnvironmentType.prod}) async {
     final fileName = ".env${env == EnvironmentType.dev ? '.dev' : ''}";
-    await dotenv.load(fileName: "assets/$fileName");
+    await dotenv.load(fileName: fileName);
   }
 
   static String get apiUrl {
     final url = dotenv.env['API_URL'];
     if (url == null || url.isEmpty) {
-      throw Exception('API_URL no está definida en assets/.env');
+      throw Exception('API_URL no está definida en .env');
     }
     return url;
   }

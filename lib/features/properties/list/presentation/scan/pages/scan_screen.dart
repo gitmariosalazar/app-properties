@@ -131,8 +131,9 @@ class _PropertyScanPageState extends State<PropertyScanPage>
 
   Future<void> _resetScanner() async {
     if (context.read<ConnectionWithPropertiesBloc>().state
-        is ConnectionWithPropertiesLoading)
+        is ConnectionWithPropertiesLoading) {
       return;
+    }
 
     setState(() {
       _shouldPauseCamera = false;

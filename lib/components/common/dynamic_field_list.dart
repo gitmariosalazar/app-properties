@@ -1,11 +1,12 @@
-// lib/core/components/common/dynamic_field_list.dart
+// lib/components/common/dynamic_field_list.dart
 import 'package:app_properties/components/common/compact_add_button.dart';
 import 'package:app_properties/components/common/form_card.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 import 'custom_text_field.dart';
 
+/// SRP: manages a dynamic list of text input fields.
+/// All colors from [ColorScheme] — adapts to light/dark.
 class DynamicFieldList extends StatefulWidget {
   final String title;
   final List<TextEditingController> controllers;
@@ -54,7 +55,6 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
       widget.controllers.length,
       (_) => GlobalKey<FormFieldState>(),
     );
-    // Asegurar al menos un campo
     if (widget.controllers.isEmpty) {
       widget.controllers.add(TextEditingController());
       _fieldKeys.add(GlobalKey<FormFieldState>());
@@ -69,7 +69,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
   }
 
   void _removeField(int index) {
-    if (widget.controllers.length <= 1) return; // Nunca eliminar el último
+    if (widget.controllers.length <= 1) return;
     setState(() {
       widget.controllers.removeAt(index);
       _fieldKeys.removeAt(index);
@@ -78,6 +78,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return FormCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +90,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: AppColors.primary,
+                    color: cs.primary,
                     size: context.iconSmall,
                   ),
                   context.hSpace(0.01),
@@ -97,7 +98,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                     widget.title,
                     style: context.titleExtraSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: cs.primary,
                     ),
                   ),
                 ],
@@ -125,9 +126,7 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                       icon: widget.icon,
                       keyboardType: widget.keyboardType,
                       validator: widget.validator,
-                      isRequired:
-                          widget.required &&
-                          index == 0, // Solo el primero es requerido si aplica
+                      isRequired: widget.required && index == 0,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -143,12 +142,12 @@ class _DynamicFieldListState extends State<DynamicFieldList> {
                       child: IconButton(
                         icon: Icon(
                           Icons.delete_forever,
-                          color: AppColors.error,
+                          color: cs.error,
                           size: context.iconMedium,
                         ),
                         onPressed: () => _removeField(index),
                         style: IconButton.styleFrom(
-                          backgroundColor: AppColors.error.withOpacity(0.2),
+                          backgroundColor: cs.error.withValues(alpha: 0.12),
                           padding: EdgeInsets.all(context.smallSpacing * 0.8),
                           shape: const CircleBorder(),
                           minimumSize: const Size(38, 38),

@@ -1,7 +1,6 @@
 // lib/features/properties/form/add-img/presentation/widgets/images_section.dart
 import 'dart:io';
 import 'package:app_properties/components/common/form_card.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_bloc.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_event.dart';
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_state.dart';
@@ -9,6 +8,7 @@ import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Images upload section. All colors from [ColorScheme] — adapts to light/dark.
 class ImagesSection extends StatefulWidget {
   final String connectionId;
   final String description;
@@ -28,6 +28,7 @@ class _ImagesSectionState extends State<ImagesSection> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final double imageSize = context.isTablet ? 90.0 : 55.0;
 
     return FormCard(
@@ -38,20 +39,20 @@ class _ImagesSectionState extends State<ImagesSection> {
             children: [
               Icon(
                 Icons.photo_library,
-                color: AppColors.primary,
+                color: cs.primary,
                 size: context.iconSmall,
               ),
-              context.hSpace(0.01),
+              context.hSpace(0.02),
               Text(
                 'Fotos de Referencia',
                 style: context.titleExtraSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: cs.primary,
                 ),
               ),
             ],
           ),
-          context.vSpace(0.01),
+          context.vSpace(0.02),
           SizedBox(
             height: imageSize,
             child: BlocBuilder<AddPropertyImageBloc, AddPropertyImageState>(
@@ -72,6 +73,7 @@ class _ImagesSectionState extends State<ImagesSection> {
                         size: imageSize,
                         context: context,
                         isLoading: isBlocLoading || _isPickingImage,
+                        cs: cs,
                       );
                     }
 
@@ -89,26 +91,13 @@ class _ImagesSectionState extends State<ImagesSection> {
                                   height: imageSize,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: imageSize,
-                                      height: imageSize,
-                                      color: AppColors.surface,
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                        color: Colors.grey,
-                                      ),
+                                    return _brokenImagePlaceholder(
+                                      imageSize,
+                                      cs,
                                     );
                                   },
                                 )
-                              : Container(
-                                  width: imageSize,
-                                  height: imageSize,
-                                  color: AppColors.surface,
-                                  child: const Icon(
-                                    Icons.broken_image,
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                              : _brokenImagePlaceholder(imageSize, cs),
                         ),
                         Positioned(
                           top: 2,
@@ -119,13 +108,13 @@ class _ImagesSectionState extends State<ImagesSection> {
                                 .add(RemoveImageEvent(index)),
                             child: Container(
                               padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(
-                                color: Colors.black54,
+                              decoration: BoxDecoration(
+                                color: cs.errorContainer,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.close,
-                                color: Colors.white,
+                                color: cs.onErrorContainer,
                                 size: 16,
                               ),
                             ),
@@ -142,17 +131,17 @@ class _ImagesSectionState extends State<ImagesSection> {
             listener: (context, state) {
               if (state is AddPropertyImageSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Fotos subidas correctamente'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: const Text('Fotos subidas correctamente'),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               } else if (state is AddPropertyImageError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
-                    backgroundColor: AppColors.error,
+                    backgroundColor: Theme.of(context).colorScheme.error,
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -165,10 +154,23 @@ class _ImagesSectionState extends State<ImagesSection> {
     );
   }
 
+  Widget _brokenImagePlaceholder(double size, ColorScheme cs) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(Icons.broken_image, color: cs.onSurfaceVariant),
+    );
+  }
+
   Widget _buildAddButton({
     required double size,
     required BuildContext context,
     required bool isLoading,
+    required ColorScheme cs,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
@@ -185,7 +187,6 @@ class _ImagesSectionState extends State<ImagesSection> {
                 ),
               );
 
-              // Opcional: quitar bandera después de un tiempo
               Future.delayed(const Duration(seconds: 3), () {
                 if (mounted) setState(() => _isPickingImage = false);
               });
@@ -197,28 +198,28 @@ class _ImagesSectionState extends State<ImagesSection> {
           height: size,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            color: AppColors.surface.withOpacity(0.75),
+            color: cs.surfaceContainerHighest,
             border: Border.all(
-              color: AppColors.primary.withOpacity(isLoading ? 0.2 : 0.45),
+              color: isLoading
+                  ? cs.outline.withValues(alpha: 0.2)
+                  : cs.primary.withValues(alpha: 0.45),
               width: 2,
             ),
           ),
           child: Center(
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                     ),
                   )
                 : Icon(
                     Icons.add_a_photo_rounded,
                     size: size * 0.48,
-                    color: AppColors.primary,
+                    color: cs.primary,
                   ),
           ),
         ),

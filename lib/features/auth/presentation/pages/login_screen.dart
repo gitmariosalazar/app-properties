@@ -64,11 +64,12 @@ class _LoginViewState extends State<LoginView> {
                   vertical: formVerticalPad * 0.6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.94),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(cardRadius),
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.09),
+                      color: theme.colorScheme.shadow.withValues(alpha: 0.10),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -118,7 +119,7 @@ class _LoginViewState extends State<LoginView> {
                     Text(
                       'Inicie sesión para continuar',
                       style: context.bodyLarge.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -158,6 +159,15 @@ class _LoginViewState extends State<LoginView> {
                             SnackBar(
                               content: Text(state.message),
                               backgroundColor: theme.colorScheme.error,
+                            ),
+                          );
+                        } else if (state is LoginUserNotFound) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.message),
+                              backgroundColor: theme.colorScheme.errorContainer,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 5),
                             ),
                           );
                         }
@@ -262,7 +272,7 @@ class _LoginInputField extends StatelessWidget {
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                   size: iconSize,
-                  color: Colors.grey[500],
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
                 onPressed: onTogglePassword,
                 tooltip: isPasswordVisible ? 'Ocultar' : 'Mostrar',
@@ -272,7 +282,7 @@ class _LoginInputField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.4),
             width: 1,
           ),
         ),

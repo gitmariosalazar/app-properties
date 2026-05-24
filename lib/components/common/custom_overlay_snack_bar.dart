@@ -1,11 +1,11 @@
 // lib/components/common/custom_overlay_snack_bar.dart
 import 'package:flutter/material.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 
 enum SnackBarType { success, error, warning, info }
 
+/// Static helper to show themed overlay toast notifications.
+/// Colors derived from [ColorScheme] tokens — adapts to light/dark.
 class CustomOverlaySnackBar {
-  // === CORREGIDO: List<_SnackBarEntry> ===
   static final List<_SnackBarEntry> _entries = [];
 
   static void show({
@@ -16,12 +16,14 @@ class CustomOverlaySnackBar {
     VoidCallback? onDismissed,
   }) {
     final overlay = Overlay.of(context);
+    final cs = Theme.of(context).colorScheme;
     final key = UniqueKey();
     final entry = _SnackBarEntry(
       key: key,
       message: message,
       type: type,
       duration: duration,
+      colorScheme: cs,
       onDismissed: () {
         _removeEntry(key, overlay);
         onDismissed?.call();
@@ -59,12 +61,12 @@ class CustomOverlaySnackBar {
   }
 }
 
-// === ENTRY CON KEY Y POSICIÓN ===
 class _SnackBarEntry {
   final Key key;
   final String message;
   final SnackBarType type;
   final Duration duration;
+  final ColorScheme colorScheme;
   final VoidCallback onDismissed;
   double targetTop = 0;
 
@@ -74,6 +76,7 @@ class _SnackBarEntry {
       message: message,
       type: type,
       duration: duration,
+      colorScheme: colorScheme,
       targetTop: targetTop,
       onDismissed: onDismissed,
     ),
@@ -84,16 +87,17 @@ class _SnackBarEntry {
     required this.message,
     required this.type,
     required this.duration,
+    required this.colorScheme,
     required this.onDismissed,
   });
 }
 
-// === WIDGET CON ANIMACIÓN ===
 class _SnackBarWidget extends StatefulWidget {
   final String message;
   final SnackBarType type;
   final Duration duration;
   final double targetTop;
+  final ColorScheme colorScheme;
   final VoidCallback onDismissed;
 
   const _SnackBarWidget({
@@ -102,6 +106,7 @@ class _SnackBarWidget extends StatefulWidget {
     required this.type,
     required this.duration,
     required this.targetTop,
+    required this.colorScheme,
     required this.onDismissed,
   });
 
@@ -174,6 +179,16 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
     super.dispose();
   }
 
+  Color _resolveColor() {
+    final cs = widget.colorScheme;
+    return switch (widget.type) {
+      SnackBarType.success => cs.secondary,
+      SnackBarType.error => cs.error,
+      SnackBarType.warning => const Color(0xFFE65100),
+      SnackBarType.info => cs.primary,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final icon = switch (widget.type) {
@@ -183,12 +198,7 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
       SnackBarType.info => Icons.info,
     };
 
-    final color = switch (widget.type) {
-      SnackBarType.success => AppColors.secondary,
-      SnackBarType.error => AppColors.error,
-      SnackBarType.warning => Colors.orange[700]!,
-      SnackBarType.info => Theme.of(context).primaryColor,
-    };
+    final color = _resolveColor();
 
     return AnimatedBuilder(
       animation: _controller,
@@ -216,8 +226,8 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
+                          color: color.withValues(alpha: 0.35),
+                          blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
                       ],

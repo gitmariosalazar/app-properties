@@ -1,11 +1,9 @@
+// lib/components/divider/section_divider.dart
 import 'package:flutter/material.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 
-class AppColors {
-  static const primary = Color(0xFF0288D1);
-  static const textPrimary = Color(0xFF212121);
-}
-
+/// SRP: collapsible section header.
+/// All colors resolved from [ColorScheme] — adapts to light/dark.
 class MinimalSectionDivider extends StatefulWidget {
   final String title;
   final Color? color;
@@ -68,10 +66,14 @@ class _MinimalSectionDividerState extends State<MinimalSectionDivider>
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = widget.color ?? AppColors.primary.withOpacity(0.1);
+    final cs = Theme.of(context).colorScheme;
+    // If a custom color is given, use it; otherwise use primary with low opacity
+    final headerBg = widget.color ?? cs.primary.withValues(alpha: 0.10);
+    final textColor = cs.onSurface;
+    final iconColor = cs.onSurface;
     final borderRadius = ResponsiveUtils.cardBorderRadius(context);
-    // Ajusta este multiplicador si el texto sigue cortado, prueba con 2.6, 3.0, etc.
-    final dividerHeight = ResponsiveUtils.sectionDividerHeight(context) * 2.8;
+    final dividerHeight =
+        ResponsiveUtils.sectionDividerHeight(context) * 2.8;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -87,33 +89,30 @@ class _MinimalSectionDividerState extends State<MinimalSectionDivider>
               horizontal: ResponsiveUtils.mediumSpacing(context),
             ),
             decoration: BoxDecoration(
-              color: effectiveColor,
+              color: headerBg,
               borderRadius: BorderRadius.circular(borderRadius),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            // La clave: Row (alineación vertical al centro), con Spacer para el texto centrado
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Espacio izquierdo para balancear el icono expand de la derecha
                 SizedBox(width: ResponsiveUtils.iconSmall(context)),
-                // Texto centrado
                 Expanded(
                   child: Center(
                     child: Text(
                       widget.title,
                       style: ResponsiveUtils.titleSmall(context).copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: textColor,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: cs.shadow.withValues(alpha: 0.12),
                             offset: const Offset(0, 1),
                             blurRadius: 3,
                           ),
@@ -123,7 +122,6 @@ class _MinimalSectionDividerState extends State<MinimalSectionDivider>
                     ),
                   ),
                 ),
-                // Icono expand/collapse alineado verticalmente al centro
                 if (widget.children != null && widget.children!.isNotEmpty)
                   AnimatedBuilder(
                     animation: _rotationAnimation,
@@ -133,7 +131,7 @@ class _MinimalSectionDividerState extends State<MinimalSectionDivider>
                         child: Icon(
                           Icons.expand_more,
                           size: ResponsiveUtils.iconSmall(context),
-                          color: AppColors.textPrimary,
+                          color: iconColor,
                         ),
                       );
                     },

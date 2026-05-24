@@ -1,12 +1,13 @@
 // lib/features/properties/presentation/widgets/connection/gps_section.dart
 import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/common/form_card.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:app_properties/utils/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:app_properties/components/button/widget_button.dart';
 
+/// GPS section of the connection form.
+/// All colors resolved from [ColorScheme] — adapts to light/dark.
 class GpsSection extends StatefulWidget {
   final TextEditingController latitudeCtrl;
   final TextEditingController longitudeCtrl;
@@ -48,12 +49,12 @@ class GpsSection extends StatefulWidget {
 class _GpsSectionState extends State<GpsSection>
     with AutomaticKeepAliveClientMixin {
   @override
-  bool get wantKeepAlive => true; // MANTIENE EL ESTADO
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    // OBLIGATORIO para AutomaticKeepAliveClientMixin
     super.build(context);
+    final cs = Theme.of(context).colorScheme;
 
     return FormCard(
       title: 'Ubicación GPS',
@@ -140,7 +141,7 @@ class _GpsSectionState extends State<GpsSection>
                 child: ActionButton(
                   label: 'Obtener Todo',
                   icon: Icons.my_location,
-                  color: AppColors.secondary,
+                  color: cs.secondary,
                   onPressed: widget.onGetLocation,
                   loading: widget.isGettingLocation,
                 ),
@@ -150,7 +151,7 @@ class _GpsSectionState extends State<GpsSection>
                 child: ActionButton(
                   label: 'Ver en Mapa',
                   icon: Icons.map,
-                  color: AppColors.primary,
+                  color: cs.primary,
                   onPressed: widget.onOpenMap,
                 ),
               ),

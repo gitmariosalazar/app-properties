@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 
+/// SRP: renders a themed input field.
+/// All colors resolved from [ColorScheme] — adapts to light/dark automatically.
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -79,6 +80,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final int minLines = widget.isTextArea ? 3 : (widget.minLines ?? 1);
     final int maxLines = widget.isTextArea ? 5 : (widget.maxLines ?? 1);
 
@@ -97,44 +99,44 @@ class _CustomTextFieldState extends State<CustomTextField> {
         minLines: minLines,
         maxLines: maxLines,
         style: TextStyle(
-          fontSize: 11, // Tamaño de texto del input (pequeño y claro)
+          fontSize: 11,
           fontWeight: FontWeight.w500,
           height: 1.3,
-          color: AppColors.textPrimary,
+          color: cs.onSurface,
         ),
         decoration: InputDecoration(
           label: widget.isRequired
-              ? _buildRequiredLabel(context)
-              : _buildLabel(context),
+              ? _buildRequiredLabel(context, cs)
+              : _buildLabel(context, cs),
           hintText: widget.isRequired ? null : widget.label,
           hintStyle: TextStyle(
             fontSize: 11,
-            color: AppColors.textSecondary.withOpacity(0.6),
+            color: cs.onSurfaceVariant.withValues(alpha: 0.7),
             fontWeight: FontWeight.w400,
           ),
           prefixIcon: widget.isTextArea
               ? null
               : Icon(
                   widget.icon,
-                  color: AppColors.primary,
+                  color: cs.primary,
                   size: context.iconSmall,
                 ),
           filled: true,
           fillColor: widget.readOnly
-              ? AppColors.surface.withOpacity(0.2)
-              : AppColors.surface.withOpacity(0.4),
-          border: _buildBorder(AppColors.primary.withOpacity(0.5)),
-          enabledBorder: _buildBorder(AppColors.primary.withOpacity(0.3)),
-          focusedBorder: _buildBorder(AppColors.primary, width: 1.5),
-          errorBorder: _buildBorder(AppColors.error, width: 1.5),
+              ? cs.surfaceContainerHighest.withValues(alpha: 0.5)
+              : cs.surfaceContainerHighest.withValues(alpha: 0.8),
+          border: _buildBorder(cs.primary.withValues(alpha: 0.5)),
+          enabledBorder: _buildBorder(cs.outline.withValues(alpha: 0.4)),
+          focusedBorder: _buildBorder(cs.primary, width: 1.5),
+          errorBorder: _buildBorder(cs.error, width: 1.5),
           isDense: true,
           contentPadding: widget.isTextArea
               ? const EdgeInsets.symmetric(horizontal: 12, vertical: 16)
               : (widget.contentPadding ??
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
-          errorStyle: const TextStyle(
+          errorStyle: TextStyle(
             fontSize: 11,
-            color: AppColors.error,
+            color: cs.error,
             fontWeight: FontWeight.w500,
             height: 1.0,
           ),
@@ -154,31 +156,34 @@ class _CustomTextFieldState extends State<CustomTextField> {
     );
   }
 
-  Widget _buildRequiredLabel(BuildContext context) {
+  Widget _buildRequiredLabel(BuildContext context, ColorScheme cs) {
     return RichText(
       text: TextSpan(
         text: widget.label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
-          color: AppColors.textSecondary,
+          color: cs.onSurfaceVariant,
           fontWeight: FontWeight.w500,
         ),
-        children: const [
+        children: [
           TextSpan(
             text: ' *',
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: cs.error,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(BuildContext context) {
+  Widget _buildLabel(BuildContext context, ColorScheme cs) {
     return Text(
       widget.label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
-        color: AppColors.textSecondary,
+        color: cs.onSurfaceVariant,
         fontWeight: FontWeight.w500,
       ),
     );

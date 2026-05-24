@@ -3,17 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 
 class DialogUtils {
-  /// Muestra un diálogo de resultado (éxito, error, etc.) con animación y accesibilidad
+  /// Animated result dialog (success, error, etc.).
+  /// Dialog background from [ColorScheme] — adapts to light/dark.
   static void showResultDialog(
     BuildContext context,
     String message,
     IconData icon,
     Color color,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final radius = context.largeBorderRadiusValue;
     final iconSize = context.iconLarge;
     final fontSize = context.titleMedium.fontSize ?? 20;
-    final buttonHeight = context.buttonHeight;
     final sidePad = context.mediumSpacing * 1.7;
     final verticalPad = context.mediumSpacing * 1.3;
 
@@ -21,7 +22,7 @@ class DialogUtils {
       context: context,
       barrierLabel: "Resultado",
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, anim1, anim2) => const SizedBox(),
       transitionBuilder: (context, anim1, anim2, child) {
@@ -35,7 +36,7 @@ class DialogUtils {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(radius),
               ),
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surfaceContainerHighest,
               elevation: 12,
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -45,7 +46,6 @@ class DialogUtils {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Ícono animado
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.0, end: 1.0),
                       duration: const Duration(milliseconds: 500),
@@ -55,7 +55,7 @@ class DialogUtils {
                           scale: value,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.11),
+                              color: color.withValues(alpha: 0.11),
                               shape: BoxShape.circle,
                             ),
                             padding: EdgeInsets.all(iconSize * 0.21),
@@ -65,7 +65,6 @@ class DialogUtils {
                       },
                     ),
                     context.vSpace(0.018),
-                    // Mensaje
                     Text(
                       message,
                       style: context.titleMedium.copyWith(
@@ -78,7 +77,6 @@ class DialogUtils {
                       textAlign: TextAlign.center,
                     ),
                     context.vSpace(0.018),
-                    // Botón Cerrar
                     SizedBox(
                       width: double.infinity,
                       child: _AnimatedActionButton(
@@ -105,13 +103,13 @@ class DialogUtils {
     );
   }
 
-  /// Diálogo de confirmación con lista de campos y acciones seguras
+  /// Animated confirmation dialog.
   static Future<bool?> showConfirmationDialog(
     BuildContext context, {
     required VoidCallback onConfirm,
     required List<Map<String, String>> fields,
   }) {
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
     final radius = context.largeBorderRadiusValue;
     final sidePad = context.mediumSpacing * 1.2;
     final verticalPad = context.mediumSpacing * 1.1;
@@ -120,7 +118,7 @@ class DialogUtils {
       context: context,
       barrierLabel: "Confirmar",
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       transitionDuration: const Duration(milliseconds: 280),
       pageBuilder: (context, _, _) => const SizedBox(),
       transitionBuilder: (context, anim1, anim2, child) {
@@ -134,7 +132,7 @@ class DialogUtils {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(radius),
               ),
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surfaceContainerHighest,
               elevation: 16,
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -145,12 +143,11 @@ class DialogUtils {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Título
                     Row(
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: theme.colorScheme.primary,
+                          color: cs.primary,
                           size: 22,
                         ),
                         context.hSpace(0.03),
@@ -158,7 +155,7 @@ class DialogUtils {
                           'Confirmar Guardado',
                           style: context.titleMedium.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                            color: cs.primary,
                             fontSize: 16,
                           ),
                         ),
@@ -168,29 +165,28 @@ class DialogUtils {
                     Text(
                       'Por favor, revise los datos antes de guardar:',
                       style: context.bodyMedium.copyWith(
-                        color: theme.colorScheme.primary.withOpacity(0.8),
+                        color: cs.onSurfaceVariant,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
                     ),
                     context.vSpace(0.013),
-                    // Campos
                     ...fields.map(
                       (field) => _confirmationField(
                         context,
                         field['label']!,
                         field['value']!,
+                        cs,
                       ),
                     ),
                     context.vSpace(0.025),
-                    // Botones
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         _AnimatedActionButton(
                           label: 'Cancelar',
                           icon: Icons.cancel,
-                          color: theme.colorScheme.error,
+                          color: cs.error,
                           isOutlined: true,
                           onPressed: () => Navigator.of(context).pop(false),
                         ),
@@ -198,7 +194,7 @@ class DialogUtils {
                         _AnimatedActionButton(
                           label: 'Guardar',
                           icon: Icons.save,
-                          color: theme.colorScheme.primary,
+                          color: cs.primary,
                           onPressed: () {
                             onConfirm();
                             Navigator.of(context).pop(true);
@@ -216,11 +212,11 @@ class DialogUtils {
     );
   }
 
-  // === CAMPO DE CONFIRMACIÓN ===
   static Widget _confirmationField(
     BuildContext context,
     String label,
     String value,
+    ColorScheme cs,
   ) {
     return Padding(
       padding: EdgeInsets.only(bottom: context.smallSpacing * 0.8),
@@ -232,7 +228,7 @@ class DialogUtils {
             style: context.bodyMedium.copyWith(
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              color: Colors.black87,
+              color: cs.onSurface,
             ),
           ),
           Expanded(
@@ -241,7 +237,7 @@ class DialogUtils {
               style: context.bodyMedium.copyWith(
                 fontWeight: FontWeight.normal,
                 fontSize: 12,
-                color: Colors.black87,
+                color: cs.onSurfaceVariant,
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
@@ -295,7 +291,7 @@ class _AnimatedActionButton extends StatelessWidget {
               vertical: context.smallSpacing * 1.4,
             ),
             elevation: 2,
-            shadowColor: color.withOpacity(0.3),
+            shadowColor: color.withValues(alpha: 0.3),
           );
 
     return AnimatedScale(

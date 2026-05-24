@@ -30,11 +30,31 @@ class ApiResponse<T> {
       }
     }
 
+    int parseStatusCode(dynamic val) {
+      if (val == null) return 0;
+      if (val is int) return val;
+      if (val is String) {
+        return int.tryParse(val) ?? 0;
+      }
+      if (val is double) {
+        return val.toInt();
+      }
+      return 0;
+    }
+
+    List<String> parseMessage(dynamic val) {
+      if (val == null) return [];
+      if (val is List) {
+        return val.map((e) => e.toString()).toList();
+      }
+      return [val.toString()];
+    }
+
     return ApiResponse<T>(
-      statusCode: json['status_code'] as int,
-      time: json['time'] as String,
-      message: List<String>.from(json['message'] ?? []),
-      url: json['url'] as String,
+      statusCode: parseStatusCode(json['status_code'] ?? json['statusCode']),
+      time: (json['time'] ?? json['timestamp'] ?? '').toString(),
+      message: parseMessage(json['message']),
+      url: (json['url'] ?? json['path'] ?? '').toString(),
       data: parsedData,
     );
   }

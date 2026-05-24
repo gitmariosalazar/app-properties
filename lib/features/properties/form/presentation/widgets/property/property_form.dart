@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/common/form_card.dart';
-import 'package:app_properties/features/properties/list/domain/entities/property.dart';
+import 'package:app_properties/features/properties/search/domain/entities/property.dart';
 
+/// Property selection & edit form. All colors from [ColorScheme] — dark/light adaptive.
 class PropertyForm extends StatefulWidget {
   final TextEditingController propertyCadastralKeyCtrl;
   final TextEditingController propertyAddressCtrl;
@@ -40,7 +41,6 @@ class _PropertyFormState extends State<PropertyForm> {
   @override
   void initState() {
     super.initState();
-    // Detectar si ya hay datos precargados → marcar como seleccionado
     _detectInitialSelection();
   }
 
@@ -61,8 +61,6 @@ class _PropertyFormState extends State<PropertyForm> {
     setState(() {
       _selectedProperty = property;
     });
-
-    // Actualizar todos los campos
     widget.propertyCadastralKeyCtrl.text = property.propertyCadastralKey;
     widget.propertyAddressCtrl.text = property.propertyAddress;
     widget.alleywayCtrl.text = property.propertyAlleyway;
@@ -70,7 +68,6 @@ class _PropertyFormState extends State<PropertyForm> {
     widget.constructionAreaCtrl.text = '';
     widget.landValueCtrl.text = '';
     widget.constructionValueCtrl.text = '';
-
     widget.onPropertySelected?.call(property);
   }
 
@@ -78,23 +75,23 @@ class _PropertyFormState extends State<PropertyForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // === FORMULARIO DE EDICIÓN (SIEMPRE VISIBLE) ===
         _buildEditForm(context),
-
         context.vSpace(0.03),
-
-        // === LISTA DE PROPIEDADES ===
         _buildPropertiesList(context),
       ],
     );
   }
 
   Widget _buildEditForm(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    // Use a semantic green — a fixed color that reads well in both modes
+    const selectedGreen = Color(0xFF2E7D32);
+    const selectedGreenLight = Color(0xFFE8F5E9);
+
     return FormCard(
       title: 'Datos del Predio',
       child: Column(
         children: [
-          // Clave Catastral
           CustomTextField(
             controller: widget.propertyCadastralKeyCtrl,
             label: 'Clave Catastral',
@@ -104,16 +101,12 @@ class _PropertyFormState extends State<PropertyForm> {
             readOnly: true,
           ),
           const SizedBox(height: 12),
-
-          // Dirección
           CustomTextField(
             controller: widget.propertyAddressCtrl,
             label: 'Dirección del Predio',
             icon: Icons.location_on,
           ),
           const SizedBox(height: 12),
-
-          // Callejón
           CustomTextField(
             controller: widget.alleywayCtrl,
             label: 'Callejón / Pasaje',
@@ -122,75 +115,30 @@ class _PropertyFormState extends State<PropertyForm> {
           ),
           const SizedBox(height: 16),
 
-          /*
-          // Áreas y Avalúos (opcionales pero visibles)
-          Row(
-            children: [
-              Expanded(
-                child: CustomTextField(
-                  controller: widget.landAreaCtrl,
-                  label: 'Área Terreno (m²)',
-                  icon: Icons.landscape,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  isRequired: false,
-                ),
-              ),
-              context.hSpace(0.025),
-              Expanded(
-                child: CustomTextField(
-                  controller: widget.constructionAreaCtrl,
-                  label: 'Área Construcción (m²)',
-                  icon: Icons.home_repair_service,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  isRequired: false,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: CustomTextField(
-                  controller: widget.landValueCtrl,
-                  label: 'Valor Terreno (\$)',
-                  icon: Icons.attach_money,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  isRequired: false,
-                ),
-              ),
-              context.hSpace(0.025),
-              Expanded(
-                child: CustomTextField(
-                  controller: widget.constructionValueCtrl,
-                  label: 'Valor Construcción (\$)',
-                  icon: Icons.attach_money,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  isRequired: false,
-                ),
-              ),
-            ],
-          ),
-          */
-
-          // Indicador de selección
+          // Selected indicator
           if (_selectedProperty != null) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: cs.brightness == Brightness.dark
+                    ? selectedGreen.withValues(alpha: 0.2)
+                    : selectedGreenLight,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
+                border: Border.all(color: selectedGreen.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                  const Icon(
+                    Icons.check_circle,
+                    color: selectedGreen,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Predio seleccionado: ${_selectedProperty!.propertyCadastralKey}',
                     style: context.bodySmall.copyWith(
-                      color: Colors.green[700],
+                      color: selectedGreen,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -204,6 +152,14 @@ class _PropertyFormState extends State<PropertyForm> {
   }
 
   Widget _buildPropertiesList(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
+
+    // Semantic selected green
+    const selGreen = Color(0xFF2E7D32);
+    const selGreenBg = Color(0xFFE8F5E9);
+    const selGreenBgDark = Color(0xFF1B3A1B);
+
     if (widget.properties == null || widget.properties!.isEmpty) {
       return FormCard(
         title: 'Propiedades',
@@ -211,12 +167,12 @@ class _PropertyFormState extends State<PropertyForm> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.orange[700]),
+              Icon(Icons.info_outline, color: cs.tertiary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'No se encontraron propiedades asociadas al cliente.',
-                  style: context.bodyMedium.copyWith(color: Colors.orange[700]),
+                  style: context.bodyMedium.copyWith(color: cs.tertiary),
                 ),
               ),
             ],
@@ -237,6 +193,12 @@ class _PropertyFormState extends State<PropertyForm> {
               _selectedProperty?.propertyCadastralKey ==
               property.propertyCadastralKey;
 
+          final cardBg = isSelected
+              ? (isDark ? selGreenBgDark : selGreenBg)
+              : null; // null → Card default from theme
+          final textColorMain = isSelected ? selGreen : cs.onSurface;
+          final textColorSub = isSelected ? selGreen : cs.onSurfaceVariant;
+
           return AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             margin: const EdgeInsets.symmetric(vertical: 6),
@@ -245,7 +207,7 @@ class _PropertyFormState extends State<PropertyForm> {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.green.withOpacity(0.3),
+                        color: selGreen.withValues(alpha: 0.25),
                         blurRadius: 8,
                         spreadRadius: 1,
                       ),
@@ -254,27 +216,24 @@ class _PropertyFormState extends State<PropertyForm> {
             ),
             child: Card(
               elevation: isSelected ? 6 : 2,
-              color: isSelected ? Colors.green[50] : null,
+              color: cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: isSelected
-                    ? BorderSide(color: Colors.green, width: 1.5)
+                    ? const BorderSide(color: selGreen, width: 1.5)
                     : BorderSide.none,
               ),
               child: ExpansionTile(
-                backgroundColor: isSelected ? Colors.green[50] : Colors.white,
+                backgroundColor: cardBg,
                 collapsedBackgroundColor: isSelected
-                    ? Colors.green[50]
-                    : Colors.grey[50],
+                    ? cardBg
+                    : cs.surfaceContainerHighest,
                 leading: CircleAvatar(
-                  backgroundColor:
-                      (isSelected
-                              ? Colors.green
-                              : Theme.of(context).primaryColor)
-                          .withOpacity(0.1),
+                  backgroundColor: (isSelected ? selGreen : cs.primary)
+                      .withValues(alpha: 0.12),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.home,
-                    color: isSelected ? Colors.green[700] : Colors.blue,
+                    color: isSelected ? selGreen : cs.primary,
                     size: 20,
                   ),
                 ),
@@ -283,7 +242,7 @@ class _PropertyFormState extends State<PropertyForm> {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: isSelected ? Colors.green[800] : null,
+                    color: textColorMain,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -291,23 +250,36 @@ class _PropertyFormState extends State<PropertyForm> {
                 subtitle: Text(
                   'Clave: ${property.propertyCadastralKey}',
                   style: TextStyle(
-                    color: isSelected ? Colors.green[700] : Colors.grey[700],
+                    color: textColorSub,
                     fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w500 : null,
+                    fontWeight: isSelected
+                        ? FontWeight.w500
+                        : FontWeight.normal,
                   ),
                 ),
                 children: [
                   Container(
                     width: double.infinity,
-                    color: isSelected ? Colors.green[50] : Colors.grey[50],
+                    color: cardBg ?? cs.surfaceContainerHighest,
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow('Sector', property.propertySector),
-                        _buildDetailRow('Tipo', property.propertyTypeName),
-                        _buildDetailRow('Callejón', property.propertyAlleyway),
-
+                        _buildDetailRow(
+                          context,
+                          'Sector',
+                          property.propertySector,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Tipo',
+                          property.propertyTypeName,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Callejón',
+                          property.propertyAlleyway,
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
@@ -326,9 +298,11 @@ class _PropertyFormState extends State<PropertyForm> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isSelected
-                                  ? Colors.grey[400]
-                                  : Colors.green,
-                              foregroundColor: Colors.white,
+                                  ? cs.surfaceContainerHighest
+                                  : selGreen,
+                              foregroundColor: isSelected
+                                  ? cs.onSurfaceVariant
+                                  : Colors.white,
                               elevation: isSelected ? 0 : 2,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
@@ -349,7 +323,8 @@ class _PropertyFormState extends State<PropertyForm> {
     );
   }
 
-  Widget _buildDetailRow(String label, String? value) {
+  Widget _buildDetailRow(BuildContext context, String label, String? value) {
+    final cs = Theme.of(context).colorScheme;
     final displayValue = value?.isNotEmpty == true ? value! : 'N/A';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -360,9 +335,9 @@ class _PropertyFormState extends State<PropertyForm> {
             width: 130,
             child: Text(
               '$label:',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: cs.onSurface,
                 fontSize: 13,
               ),
             ),
@@ -372,8 +347,8 @@ class _PropertyFormState extends State<PropertyForm> {
               displayValue,
               style: TextStyle(
                 color: displayValue == 'N/A'
-                    ? Colors.grey[600]
-                    : Colors.black54,
+                    ? cs.onSurfaceVariant
+                    : cs.onSurface,
                 fontSize: 13,
               ),
             ),

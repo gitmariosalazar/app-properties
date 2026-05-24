@@ -1,6 +1,8 @@
+import 'package:app_properties/features/home/presentation/pages/shell_navigator.dart';
 import 'package:app_properties/features/profile/presentation/pages/profile_screen.dart';
-import 'package:app_properties/features/properties/list/presentation/manually/blocs/index.dart';
-import 'package:app_properties/features/properties/list/presentation/scan/pages/scan_screen.dart';
+import 'package:app_properties/features/properties/search/presentation/manually/blocs/index.dart';
+import 'package:app_properties/features/properties/search/presentation/scan/pages/scan_screen.dart';
+import 'package:app_properties/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -12,28 +14,60 @@ import 'package:app_properties/features/auth/presentation/pages/login_screen.dar
 import 'package:app_properties/features/home/presentation/pages/home_screen.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/update_form_screen.dart';
 import 'package:app_properties/features/observations/presentation/pages/observation_page.dart';
-
-import 'package:app_properties/features/properties/list/presentation/manually/pages/manually_screen.dart';
+import 'package:app_properties/features/properties/search/presentation/manually/pages/manually_screen.dart';
+import 'package:app_properties/features/properties/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:app_properties/features/properties/search/presentation/info/pages/SearchConnectionPage.dart';
+import 'package:app_properties/features/properties/search/presentation/info/cubit/search_connection_cubit.dart';
+import 'package:app_properties/features/properties/form/presentation/screen/detail_page.dart';
 
 // === BLOCs ===
-import 'package:app_properties/features/properties/list/presentation/scan/blocs/connection_with_properties_bloc.dart';
+import 'package:app_properties/features/properties/search/presentation/scan/blocs/connection_with_properties_bloc.dart';
 import 'package:app_properties/features/observations/presentation/bloc/observation_bloc.dart';
 
 // === ENTIDADES ===
-import 'package:app_properties/features/properties/list/domain/entities/connection.dart';
+import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
 
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
     observers: [routeObserver],
+    redirect: (context, state) {
+      if (state.uri.path == '/') return '/login';
+      return null;
+    },
     routes: [
-      // === LOGIN ===
+      // === LOGIN (sin shell) ===
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
 
-      // === HOME ===
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      // === SHELL: rutas con bottom nav ===
+      ShellRoute(
+        builder: (context, state, child) => ShellNavigator(child: child),
+        routes: [
+          GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+          GoRoute(
+            path: '/dashboard',
+            builder: (_, _) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/manually-entry-properties',
+            builder: (context, state) => BlocProvider(
+              create: (context) =>
+                  di.sl<ManuallyConnectionWithPropertiesBloc>(),
+              child: const ManualEntryConnectionWithPropertiesScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/search-connection',
+            builder: (context, state) => BlocProvider(
+              create: (context) => di.sl<SearchConnectionCubit>(),
+              child: const SearchConnectionPage(),
+            ),
+          ),
+          GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+        ],
+      ),
 
-      // === ESCANEAR QR (CORRECTO) ===
+      // === RUTAS FULL-SCREEN (sin bottom nav) ===
       GoRoute(
         path: '/property-scan',
         builder: (context, state) {
@@ -43,17 +77,14 @@ class AppRouter {
           );
         },
       ),
-      // === EDITAR FORMULARIO ===
       GoRoute(
         path: '/update-form',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
 
-          // Validar que extra no sea null y tenga 'connection'
           if (extra == null ||
               !extra.containsKey('connection') ||
               extra['connection'] == null) {
-            // Mostrar error y redirigir
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -68,16 +99,35 @@ class AppRouter {
             );
           }
 
-          final connection = extra['connection'] as ConnectionEntity;
+          final connectionData = extra['connection'];
           final mode = extra['mode'] as String? ?? 'manual';
 
-          return BlocProvider(
-            create: (_) => di.sl<ConnectionWithPropertiesBloc>(),
-            child: UpdateConnectionFormScreen(
-              connection: connection,
-              mode: mode,
-            ),
+          if (connectionData is! ConnectionWithPropertiesEntity) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error: Tipo de datos de conexión inválido'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              context.go('/home');
+            });
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          return UpdateConnectionFormScreen(
+            connection: connectionData,
+            mode: mode,
           );
+        },
+      ),
+      GoRoute(
+        path: '/detail-page',
+        builder: (context, state) {
+          final cadastralKey = state.extra as String? ?? '';
+          return DetailPage(cadastralKey: cadastralKey);
         },
       ),
 
@@ -94,14 +144,8 @@ class AppRouter {
           );
         },
       ),
-      // === INGRESO MANUAL DE PROPIEDADES (CORRECTO) ===
-      GoRoute(
-        path: '/manually-entry-properties',
-        builder: (context, state) => BlocProvider(
-          create: (context) => di.sl<ManuallyConnectionWithPropertiesBloc>(),
-          child: const ManualEntryConnectionWithPropertiesScreen(),
-        ),
-      ),
+
+      // === PERFIL ===
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),

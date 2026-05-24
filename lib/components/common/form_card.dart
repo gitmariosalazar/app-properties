@@ -1,8 +1,9 @@
-// lib/core/components/common/form_card.dart
-import 'package:app_properties/core/theme/app_colors.dart';
+// lib/components/common/form_card.dart
 import 'package:flutter/material.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 
+/// SRP: renders a themed card container for form sections.
+/// All colors resolved from [ColorScheme] — adapts to light/dark.
 class FormCard extends StatelessWidget {
   final String? title;
   final Widget child;
@@ -12,11 +13,12 @@ class FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
       elevation: context.cardElevation,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(context.cardBorderRadiusValue),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: cs.outlineVariant),
       ),
       child: Padding(
         padding: padding ?? context.cardPadding,
@@ -38,7 +40,7 @@ class FormCard extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: AppColors.primary,
+                      color: cs.primary,
                       size: context.iconSmall,
                     ),
                     context.hSpace(0.015),
@@ -46,7 +48,7 @@ class FormCard extends StatelessWidget {
                       title!,
                       style: context.titleExtraSmall.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: cs.primary,
                       ),
                     ),
                   ],

@@ -14,14 +14,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_properties/core/di/injection.dart';
 import 'package:app_properties/features/auth/data/datasources/auth_local_datasource.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 import 'package:app_properties/components/button/widget_button.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/common/form_card.dart';
 import 'package:app_properties/utils/date_utils.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:app_properties/utils/validators.dart';
-import 'package:app_properties/features/properties/list/domain/entities/connection.dart';
+import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/company_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/connection_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/customer_remote_data_source.dart';
@@ -49,7 +48,7 @@ import 'package:app_properties/features/properties/form/presentation/widgets/con
 import 'package:app_properties/components/common/custom_overlay_snack_bar.dart';
 
 class UpdateConnectionFormScreen extends StatefulWidget {
-  final ConnectionEntity connection;
+  final ConnectionWithPropertiesEntity connection;
   final String mode;
 
   const UpdateConnectionFormScreen({
@@ -65,6 +64,9 @@ class UpdateConnectionFormScreen extends StatefulWidget {
 
 class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     with TickerProviderStateMixin {
+  // ColorScheme getter — available to all methods without passing context
+  ColorScheme get cs => Theme.of(context).colorScheme;
+
   // Form Keys
   final _formKeys = [
     GlobalKey<FormState>(),
@@ -396,9 +398,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         firstDate: DateTime(1900),
         lastDate: DateTime.now(),
         builder: (context, child) => Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppColors.primary),
-          ),
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: Theme.of(context).colorScheme),
           child: child!,
         ),
       );
@@ -519,7 +521,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.secondary,
+        backgroundColor: cs.secondary,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -529,7 +531,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: cs.error,
         behavior: SnackBarBehavior.floating,
         action: onRetry != null
             ? SnackBarAction(
@@ -556,12 +558,19 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
             ),
           ],
         ),
-        backgroundColor: AppColors.secondary,
+        backgroundColor: cs.secondary,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
       ),
     );
-    Future.delayed(const Duration(seconds: 2), () => context.pop());
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        context.pushReplacement(
+          '/detail-page',
+          extra: _cadastralKeyCtrl.text.trim(),
+        );
+      }
+    });
   }
 
   void _nextStep() {
@@ -606,9 +615,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: cs.secondary),
             child: const Text('Guardar'),
           ),
         ],
@@ -984,9 +991,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: cs.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -1004,15 +1011,15 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         actions: [
           IconButton(
             icon: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.error,
+              decoration: BoxDecoration(
+                color: cs.error,
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(2),
               child: Icon(
                 Icons.close,
                 size: context.iconMedium,
-                color: AppColors.surface,
+                color: cs.surfaceContainerHighest,
               ),
             ),
             onPressed: () async {
@@ -1031,7 +1038,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                     ElevatedButton(
                       onPressed: () => Navigator.pop(ctx, true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.error,
+                        backgroundColor: cs.error,
                       ),
                       child: const Text(
                         'Salir',
@@ -1058,7 +1065,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 _buildClientStep(),
-                _buildConnectionStep(), // SIN Builder, SIN BlocProvider
+                _buildConnectionStep(),
                 _buildPropertyStep(),
               ],
             ),
@@ -1071,7 +1078,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
   Widget _buildCustomStepper() {
     return Container(
-      color: AppColors.shadow.withOpacity(0.8),
+      color: cs.surfaceContainerHighest,
       padding: EdgeInsets.symmetric(vertical: context.smallSpacing * 1.2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1099,16 +1106,16 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
     if (hasError) {
       icon = Icons.error;
-      bg = AppColors.error;
+      bg = cs.error;
     } else if (isCompleted) {
       icon = Icons.check;
-      bg = AppColors.secondary;
+      bg = cs.secondary;
     } else if (isActive) {
       icon = baseIcon;
-      bg = AppColors.accent;
+      bg = cs.tertiary;
     } else {
       icon = baseIcon;
-      bg = AppColors.primary.withOpacity(0.3);
+      bg = cs.primary.withValues(alpha: 0.3);
       color = Colors.white70;
     }
 
@@ -1122,7 +1129,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: bg.withOpacity(0.4),
+                  color: bg.withValues(alpha: 0.4),
                   blurRadius: 16,
                   spreadRadius: 2,
                 ),
@@ -1141,7 +1148,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         height: 3,
         margin: EdgeInsets.symmetric(horizontal: context.smallSpacing),
         decoration: BoxDecoration(
-          color: isCompleted ? Colors.white : Colors.white.withOpacity(0.3),
+          color: isCompleted
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -1155,7 +1164,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       child: Column(
         children: [
           _buildSummaryCard(),
-          context.vSpace(0.0),
+          context.vSpace(0.02),
           FormCard(
             title: 'Tipo de Cliente',
             child: Center(
@@ -1168,14 +1177,14 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                       style: TextStyle(
                         color: _isNaturalPerson
                             ? Colors.white
-                            : AppColors.textPrimary.withOpacity(0.6),
+                            : cs.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     icon: Icon(
                       Icons.verified_user,
                       color: _isNaturalPerson
                           ? Colors.white
-                          : AppColors.textPrimary.withOpacity(0.6),
+                          : cs.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   ButtonSegment(
@@ -1185,14 +1194,14 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                       style: TextStyle(
                         color: _isCompany
                             ? Colors.white
-                            : AppColors.textPrimary.withOpacity(0.6),
+                            : cs.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     icon: Icon(
                       Icons.business,
                       color: _isCompany
                           ? Colors.white
-                          : AppColors.textPrimary.withOpacity(0.6),
+                          : cs.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -1202,8 +1211,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.resolveWith(
                     (s) => s.contains(WidgetState.selected)
-                        ? AppColors.primary
-                        : AppColors.surface.withOpacity(0.6),
+                        ? cs.primary
+                        : cs.surfaceContainerHighest.withValues(alpha: 0.6),
                   ),
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
@@ -1216,7 +1225,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               ),
             ),
           ),
-          context.vSpace(0.0),
+          context.vSpace(0.02),
           if (_isNaturalPerson)
             NaturalPersonForm(
               firstNameCtrl: _firstNameCtrl,
@@ -1251,10 +1260,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.primary.withOpacity(0.1),
+            backgroundColor: cs.primary.withValues(alpha: 0.1),
             child: Icon(
               _isCompany ? Icons.business : Icons.person,
-              color: AppColors.primary,
+              color: cs.primary,
               size: context.iconMedium,
             ),
           ),
@@ -1267,7 +1276,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                   widget.connection.connectionId,
                   style: context.titleSmall.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: cs.primary,
                   ),
                 ),
                 Text(
@@ -1278,9 +1287,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                 ),
                 Text(
                   widget.connection.connectionAddress,
-                  style: context.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: context.bodySmall.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -1414,6 +1421,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
                       _sewerage,
                       (v) => setState(() => _sewerage = v),
                     ),
+                    context.hSpace(0.01),
                     _buildSwitchCard(
                       'Estado Activo',
                       _status,
@@ -1424,6 +1432,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               ],
             ),
           ),
+          context.vSpace(0.02),
           FormCard(
             title: 'Observación o Novedad',
             child: CustomTextField(
@@ -1434,10 +1443,12 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               isRequired: false,
             ),
           ),
+          context.vSpace(0.02),
           ImagesSection(
             connectionId: widget.connection.connectionId,
             description: 'Actualización de acometida desde móvil',
           ),
+          context.vSpace(0.02),
           GpsSection(
             latitudeCtrl: _latitudeCtrl,
             longitudeCtrl: _longitudeCtrl,
@@ -1467,23 +1478,23 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       fontWeight: FontWeight.w400,
     ),
     filled: true,
-    fillColor: AppColors.surface.withOpacity(0.3),
+    fillColor: cs.surfaceContainerHighest.withValues(alpha: 0.3),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+      borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.5)),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      borderSide: BorderSide(color: cs.primary, width: 1.5),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.error),
+      borderSide: BorderSide(color: cs.error),
     ),
     isDense: true,
   );
@@ -1516,10 +1527,10 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   Widget _buildBottomBar() => Container(
     padding: context.screenPadding,
     decoration: BoxDecoration(
-      color: AppColors.card,
+      color: cs.surfaceContainerHighest,
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           blurRadius: 12,
           offset: const Offset(0, -3),
         ),
@@ -1532,7 +1543,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
             child: ActionButton(
               label: 'Anterior',
               icon: Icons.arrow_back,
-              color: AppColors.textSecondary.withOpacity(0.8),
+              color: cs.onSurfaceVariant.withValues(alpha: 0.8),
               onPressed: _prevStep,
             ),
           ),
@@ -1541,7 +1552,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
           child: ActionButton(
             label: _currentStep == 2 ? 'Finalizar' : 'Siguiente',
             icon: _currentStep == 2 ? Icons.check : Icons.arrow_forward,
-            color: AppColors.secondary,
+            color: cs.secondary,
             onPressed: _nextStep,
             loading: _isSubmitting,
           ),
@@ -1558,21 +1569,33 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     child: Container(
       margin: EdgeInsets.symmetric(horizontal: context.smallSpacing * 0.5),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.4),
+        color: value
+            ? cs.primaryContainer.withValues(alpha: 0.35)
+            : cs.surfaceContainerHighest.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
-          width: 0.5,
+          color: value
+              ? cs.primary.withValues(alpha: 0.4)
+              : cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
         ),
       ),
       child: SwitchListTile(
         title: Text(
           title,
-          style: context.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          style: context.bodyMedium.copyWith(
+            fontWeight: FontWeight.w500,
+            color: value ? cs.onPrimaryContainer : cs.onSurface,
+          ),
         ),
         value: value,
         onChanged: onChanged,
-        activeThumbColor: AppColors.primary,
+        // ── Track (fondo del switch) ──────────────────────────
+        activeTrackColor: cs.primary,
+        inactiveTrackColor: cs.surfaceContainerHighest,
+        // ── Thumb (bolita del switch) ─────────────────────────
+        activeThumbColor: cs.onPrimary,
+        inactiveThumbColor: cs.outline,
         contentPadding: EdgeInsets.symmetric(horizontal: context.smallSpacing),
         dense: true,
         shape: RoundedRectangleBorder(

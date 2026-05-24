@@ -137,7 +137,7 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
           ),
         ),
 
-        context.vSpace(0.03),
+        context.vSpace(0.02),
 
         // Correos (NO requeridos)
         AnimatedSwitcher(
@@ -154,7 +154,7 @@ class _NaturalPersonFormState extends State<NaturalPersonForm> {
           ),
         ),
 
-        context.vSpace(0.03),
+        context.vSpace(0.02),
 
         // Teléfonos (SÍ requeridos)
         AnimatedSwitcher(

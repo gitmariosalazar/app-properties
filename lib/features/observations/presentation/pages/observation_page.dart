@@ -5,6 +5,7 @@ import 'package:app_properties/features/observations/domain/entities/observation
 import 'package:app_properties/features/observations/presentation/bloc/observation_bloc.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 
+/// All colors resolved from [ColorScheme] — adapts to light/dark automatically.
 class ObservationPage extends StatelessWidget {
   final String? connectionId;
 
@@ -13,37 +14,34 @@ class ObservationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: cs.surface,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.notifications, color: Colors.white, size: 26),
+            Icon(Icons.notifications, color: cs.onPrimary, size: 26),
             const SizedBox(width: 10),
             Text(
-              "Observaciones",
+              'Observaciones',
               style: context.titleMedium.copyWith(
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: cs.onPrimary,
                 letterSpacing: 0.5,
               ),
             ),
           ],
         ),
         centerTitle: true,
-        backgroundColor: theme.colorScheme.primary.withOpacity(0.9),
-        foregroundColor: Colors.white,
         elevation: 4,
-        shadowColor: Colors.black38,
       ),
       body: BlocBuilder<ObservationBloc, ObservationState>(
         builder: (context, state) {
           if (state is ObservationLoading) {
-            debugPrint(
-              'Cargando observaciones...${connectionId ?? 'sin connectionId'}',
+            return Center(
+              child: CircularProgressIndicator(color: cs.primary),
             );
-            return const Center(child: CircularProgressIndicator());
           } else if (state is ObservationError) {
             return _buildError(context, state.message);
           } else if (state is FindAllObservationLoaded) {
@@ -70,7 +68,7 @@ class ObservationPage extends StatelessWidget {
             return Center(
               child: _buildActionButton(
                 context,
-                label: "Cargar observaciones",
+                label: 'Cargar observaciones',
                 icon: Icons.refresh,
                 onPressed: () {
                   context.read<ObservationBloc>().add(
@@ -86,77 +84,71 @@ class ObservationPage extends StatelessWidget {
   }
 
   Widget _buildEmpty(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
-      child: FadeTransition(
-        opacity: AlwaysStoppedAnimation(1.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.notifications_off,
-              color: Colors.grey[500],
-              size: context.iconLarge * 1.2,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.notifications_off,
+            color: cs.onSurfaceVariant,
+            size: context.iconLarge * 1.2,
+          ),
+          context.vSpace(0.02),
+          Text(
+            'No hay observaciones disponibles',
+            style: context.bodyLarge.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w600,
             ),
-            context.vSpace(0.02),
-            Text(
-              "No hay observaciones disponibles",
-              style: context.bodyLarge.copyWith(
-                color: Colors.black54,
-                fontWeight: FontWeight.w600,
-                fontSize: context.bodyLarge.fontSize! * 1.1,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            context.vSpace(0.025),
-            _buildActionButton(
-              context,
-              label: "Reintentar",
-              icon: Icons.refresh,
-              onPressed: () {
-                context.read<ObservationBloc>().add(FindAllObservationsEvent());
-              },
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+          context.vSpace(0.025),
+          _buildActionButton(
+            context,
+            label: 'Reintentar',
+            icon: Icons.refresh,
+            onPressed: () {
+              context.read<ObservationBloc>().add(FindAllObservationsEvent());
+            },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildError(BuildContext context, String message) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
-      child: FadeTransition(
-        opacity: AlwaysStoppedAnimation(1.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              color: Colors.red[400],
-              size: context.iconLarge * 1.2,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: cs.error,
+            size: context.iconLarge * 1.2,
+          ),
+          context.vSpace(0.02),
+          Text(
+            '❌ Error: $message',
+            style: context.bodyLarge.copyWith(
+              color: cs.error,
+              fontWeight: FontWeight.w700,
             ),
-            context.vSpace(0.02),
-            Text(
-              "❌ Error: $message",
-              style: context.bodyLarge.copyWith(
-                color: Colors.red[800],
-                fontWeight: FontWeight.w700,
-                fontSize: context.bodyLarge.fontSize! * 1.1,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            context.vSpace(0.025),
-            _buildActionButton(
-              context,
-              label: "Reintentar",
-              icon: Icons.refresh,
-              onPressed: () {
-                context.read<ObservationBloc>().add(FindAllObservationsEvent());
-              },
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          context.vSpace(0.025),
+          _buildActionButton(
+            context,
+            label: 'Reintentar',
+            icon: Icons.refresh,
+            onPressed: () {
+              context.read<ObservationBloc>().add(FindAllObservationsEvent());
+            },
+          ),
+        ],
       ),
     );
   }
@@ -167,19 +159,21 @@ class ObservationPage extends StatelessWidget {
     required IconData icon,
     required VoidCallback onPressed,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, color: Colors.white, size: context.iconMedium),
+      icon: Icon(icon, color: cs.onPrimary, size: context.iconMedium),
       label: Text(
         label,
         style: context.buttonText.copyWith(
-          color: Colors.white,
+          color: cs.onPrimary,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
         padding: EdgeInsets.symmetric(
           horizontal: context.largeSpacing * 1.2,
           vertical: context.mediumSpacing * 1.1,
@@ -188,12 +182,12 @@ class ObservationPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(context.mediumBorderRadiusValue),
         ),
         elevation: 4,
-        shadowColor: Colors.black38,
       ),
     );
   }
 
   Widget _buildObservationCard(BuildContext context, ObservationEntity obs) {
+    final cs = Theme.of(context).colorScheme;
     final type = obs.noveltyTypeName.toUpperCase();
     final color = _getColorForNovelty(type);
     final icon = _getIconForNovelty(type);
@@ -206,7 +200,7 @@ class ObservationPage extends StatelessWidget {
       child: Material(
         elevation: context.cardElevation + 2,
         borderRadius: BorderRadius.circular(context.largeBorderRadiusValue),
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color ?? cs.surfaceContainerHighest,
         child: InkWell(
           borderRadius: BorderRadius.circular(context.largeBorderRadiusValue),
           onTap: () => _showDetailsDialog(context, obs, color, icon),
@@ -215,53 +209,47 @@ class ObservationPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título ocupando todo el ancho
                 Row(
                   children: [
                     Text(
                       obs.observationTitle,
                       style: context.titleSmall.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: cs.onSurface,
                         fontSize: context.titleExtraSmall.fontSize!,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const Spacer(),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          vertical: context.smallSpacing * 0.5,
-                          horizontal: context.mediumSpacing,
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        vertical: context.smallSpacing * 0.5,
+                        horizontal: context.mediumSpacing,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(
+                          context.smallBorderRadiusValue,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.blueGrey[50],
-                          borderRadius: BorderRadius.circular(
-                            context.smallBorderRadiusValue,
-                          ),
-                        ),
-                        child: Text(
-                          'C.C: $connectionIdText',
-                          style: context.bodySmall.copyWith(
-                            color: Colors.blueGrey[800],
-                            fontWeight: FontWeight.w600,
-                            fontSize: context.bodySmall.fontSize! * 1.1,
-                          ),
+                      ),
+                      child: Text(
+                        'C.C: $connectionIdText',
+                        style: context.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
                 context.vSpace(0.01),
-                // Contenido principal
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
                       radius: context.iconMedium,
-                      backgroundColor: color.withOpacity(0.2),
+                      backgroundColor: color.withValues(alpha: 0.2),
                       child: Icon(
                         icon,
                         color: color,
@@ -278,7 +266,7 @@ class ObservationPage extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: context.bodyMedium.copyWith(
-                              color: Colors.grey[800],
+                              color: cs.onSurfaceVariant,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -291,7 +279,7 @@ class ObservationPage extends StatelessWidget {
                                   horizontal: context.mediumSpacing,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[100],
+                                  color: cs.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(
                                     context.smallBorderRadiusValue,
                                   ),
@@ -300,7 +288,7 @@ class ObservationPage extends StatelessWidget {
                                   children: [
                                     Icon(
                                       Icons.calendar_today,
-                                      color: Colors.grey[700],
+                                      color: cs.onSurfaceVariant,
                                       size: context.iconExtraSmall,
                                     ),
                                     context.hSpace(0.005),
@@ -309,7 +297,7 @@ class ObservationPage extends StatelessWidget {
                                         DateTime.parse(obs.registrationDate),
                                       ),
                                       style: context.bodySmall.copyWith(
-                                        color: Colors.grey[700],
+                                        color: cs.onSurfaceVariant,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -323,7 +311,7 @@ class ObservationPage extends StatelessWidget {
                                   horizontal: context.mediumSpacing,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.15),
+                                  color: color.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(
                                     context.smallBorderRadiusValue,
                                   ),
@@ -347,7 +335,7 @@ class ObservationPage extends StatelessWidget {
                         color: color,
                         size: context.iconSmall,
                       ),
-                      tooltip: "Ver detalles",
+                      tooltip: 'Ver detalles',
                       onPressed: () =>
                           _showDetailsDialog(context, obs, color, icon),
                     ),
@@ -367,6 +355,7 @@ class ObservationPage extends StatelessWidget {
     Color color,
     IconData icon,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final connectionIdText = obs.connectionId.isNotEmpty
         ? obs.connectionId
         : 'Sin ID de conexión';
@@ -377,7 +366,7 @@ class ObservationPage extends StatelessWidget {
           horizontal: context.mediumSpacing,
           vertical: context.largeSpacing,
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: cs.surfaceContainerHighest,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(context.largeBorderRadiusValue),
         ),
@@ -385,7 +374,7 @@ class ObservationPage extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(context.largeBorderRadiusValue),
             gradient: LinearGradient(
-              colors: [Colors.white, color.withOpacity(0.05)],
+              colors: [cs.surfaceContainerHighest, color.withValues(alpha: 0.05)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -397,12 +386,11 @@ class ObservationPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título ocupando todo el ancho
                   Row(
                     children: [
                       CircleAvatar(
                         radius: context.iconMedium,
-                        backgroundColor: color.withOpacity(0.2),
+                        backgroundColor: color.withValues(alpha: 0.2),
                         child: Icon(
                           icon,
                           color: color,
@@ -414,7 +402,7 @@ class ObservationPage extends StatelessWidget {
                         child: Text(
                           obs.observationTitle,
                           style: context.titleMedium.copyWith(
-                            color: Colors.black87,
+                            color: cs.onSurface,
                             fontWeight: FontWeight.w700,
                             fontSize: context.titleExtraSmall.fontSize!,
                           ),
@@ -433,7 +421,7 @@ class ObservationPage extends StatelessWidget {
                         horizontal: context.mediumSpacing,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blueGrey[50],
+                        color: cs.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(
                           context.smallBorderRadiusValue,
                         ),
@@ -441,9 +429,8 @@ class ObservationPage extends StatelessWidget {
                       child: Text(
                         'C.C: $connectionIdText',
                         style: context.bodySmall.copyWith(
-                          color: Colors.blueGrey[800],
+                          color: cs.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
-                          fontSize: context.bodySmall.fontSize! * 1.1,
                         ),
                       ),
                     ),
@@ -451,40 +438,40 @@ class ObservationPage extends StatelessWidget {
                   Divider(
                     height: context.mediumSpacing * 2,
                     thickness: 1.2,
-                    color: Colors.grey[200],
+                    color: cs.outlineVariant,
                   ),
-                  _infoRow(context, "📝 Detalle", obs.observationDetail),
+                  _infoRow(context, '📝 Detalle', obs.observationDetail),
                   _infoRow(
                     context,
-                    "📅 Fecha",
+                    '📅 Fecha',
                     formatDateTime(DateTime.parse(obs.registrationDate)),
                   ),
-                  _infoRow(context, "📍 Dirección", obs.address),
+                  _infoRow(context, '📍 Dirección', obs.address),
                   _infoRow(
                     context,
-                    "👤 Cliente",
-                    "${obs.clientName} (${obs.clientId})",
+                    '👤 Cliente',
+                    '${obs.clientName} (${obs.clientId})',
                   ),
                   _infoRow(
                     context,
-                    "🔢 Lectura anterior",
+                    '🔢 Lectura anterior',
                     obs.previousReading.toString(),
                   ),
                   _infoRow(
                     context,
-                    "🔢 Lectura actual",
+                    '🔢 Lectura actual',
                     obs.currentReading.toString(),
                   ),
-                  _infoRow(context, "⚙️ Tipo de novedad", obs.noveltyTypeName),
+                  _infoRow(context, '⚙️ Tipo de novedad', obs.noveltyTypeName),
                   _infoRow(
                     context,
-                    "📋 Descripción de novedad",
+                    '📋 Descripción de novedad',
                     obs.noveltyTypeDescription,
                   ),
                   if (obs.actionRecommended != null)
                     _infoRow(
                       context,
-                      "🛠️ Acción recomendada",
+                      '🛠️ Acción recomendada',
                       obs.actionRecommended,
                     ),
                   context.vSpace(0.025),
@@ -508,7 +495,7 @@ class ObservationPage extends StatelessWidget {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close, size: 20),
                       label: const Text(
-                        "Cerrar",
+                        'Cerrar',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -523,16 +510,17 @@ class ObservationPage extends StatelessWidget {
   }
 
   Widget _infoRow(BuildContext context, String label, String? value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(bottom: context.mediumSpacing),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$label: ",
+            '$label: ',
             style: context.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: cs.onSurface,
             ),
           ),
           Expanded(
@@ -540,7 +528,7 @@ class ObservationPage extends StatelessWidget {
               value ?? '—',
               style: context.bodyMedium.copyWith(
                 fontWeight: FontWeight.w400,
-                color: Colors.black87,
+                color: cs.onSurfaceVariant,
                 fontSize: context.bodyMedium.fontSize! * 0.95,
               ),
               maxLines: 4,
@@ -553,44 +541,28 @@ class ObservationPage extends StatelessWidget {
   }
 
   Color _getColorForNovelty(String type) {
-    switch (type.toUpperCase()) {
-      case 'NORMAL':
-        return Colors.green[600]!;
-      case 'CONSUMO BAJO':
-        return Colors.amber[500]!;
-      case 'CONSUMO ALTO':
-        return Colors.amber[700]!;
-      case 'CONSUMO MUY BAJO':
-        return Colors.red[600]!;
-      case 'CONSUMO EXCESIVO':
-        return Colors.red[800]!;
-      case 'LECTURA INVÁLIDA':
-        return Colors.purple[600]!;
-      case 'SIN LECTURA':
-        return Colors.grey[600]!;
-      default:
-        return Colors.grey[500]!;
-    }
+    return switch (type.toUpperCase()) {
+      'NORMAL' => const Color(0xFF43A047),
+      'CONSUMO BAJO' => const Color(0xFFFFB300),
+      'CONSUMO ALTO' => const Color(0xFFFB8C00),
+      'CONSUMO MUY BAJO' => const Color(0xFFE53935),
+      'CONSUMO EXCESIVO' => const Color(0xFFB71C1C),
+      'LECTURA INVÁLIDA' => const Color(0xFF8E24AA),
+      'SIN LECTURA' => const Color(0xFF546E7A),
+      _ => const Color(0xFF78909C),
+    };
   }
 
   IconData _getIconForNovelty(String type) {
-    switch (type.toUpperCase()) {
-      case 'NORMAL':
-        return Icons.check_circle;
-      case 'CONSUMO BAJO':
-        return Icons.trending_down;
-      case 'CONSUMO ALTO':
-        return Icons.trending_up;
-      case 'CONSUMO MUY BAJO':
-        return Icons.arrow_downward;
-      case 'CONSUMO EXCESIVO':
-        return Icons.arrow_upward;
-      case 'LECTURA INVÁLIDA':
-        return Icons.error;
-      case 'SIN LECTURA':
-        return Icons.block;
-      default:
-        return Icons.help;
-    }
+    return switch (type.toUpperCase()) {
+      'NORMAL' => Icons.check_circle,
+      'CONSUMO BAJO' => Icons.trending_down,
+      'CONSUMO ALTO' => Icons.trending_up,
+      'CONSUMO MUY BAJO' => Icons.arrow_downward,
+      'CONSUMO EXCESIVO' => Icons.arrow_upward,
+      'LECTURA INVÁLIDA' => Icons.error,
+      'SIN LECTURA' => Icons.block,
+      _ => Icons.help,
+    };
   }
 }

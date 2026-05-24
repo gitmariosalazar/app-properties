@@ -37,7 +37,7 @@ class EditTextField extends StatelessWidget {
           label,
           style: (textStyle ?? ResponsiveUtils.bodySmall(context)).copyWith(
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface.withOpacity(0.8),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
           ),
         ),
         ResponsiveUtils.vSpace(context, 0.0035),
@@ -66,7 +66,7 @@ class EditTextField extends StatelessWidget {
                     ResponsiveUtils.extraSmallBorderRadiusValue(context),
                   ),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.5),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -105,7 +105,7 @@ class EditTextField extends StatelessWidget {
               child: Icon(
                 leftIcon,
                 size: iconSize,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],

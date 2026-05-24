@@ -1,13 +1,12 @@
-// lib/components/common/custom_snack_bar.dart
+// lib/components/messages/custom_snack_bar.dart
 import 'package:flutter/material.dart';
-import 'package:app_properties/core/theme/app_colors.dart';
 
 /// Tipos de SnackBar con íconos y colores predefinidos
 enum SnackBarType { success, error, warning, info }
 
-/// Clase estática para mostrar SnackBars reutilizables en toda la app
+/// Static helper for themed SnackBar notifications.
+/// Colors resolved from [ColorScheme] — adapts to light/dark.
 class CustomSnackBar {
-  /// Muestra un SnackBar simple con ícono y color según tipo
   static void show({
     required BuildContext context,
     required String message,
@@ -33,14 +32,12 @@ class CustomSnackBar {
     );
   }
 
-  /// Muestra un SnackBar con botón de acción (ej: Reintentar)
-  /// Muestra un SnackBar con botón de acción (opcional)
   static void showWithAction({
     required BuildContext context,
     required String message,
     required SnackBarType type,
     required String actionLabel,
-    required VoidCallback onActionPressed, // ← AÚN REQUIRED
+    required VoidCallback onActionPressed,
     Duration duration = const Duration(seconds: 5),
   }) {
     hideCurrent(context);
@@ -57,13 +54,13 @@ class CustomSnackBar {
     );
   }
 
-  /// Muestra un SnackBar de carga con spinner
   static void showLoading({
     required BuildContext context,
     String message = 'Guardando...',
     Duration? autoHideAfter,
   }) {
-    hideCurrent(context); // ← CORREGIDO
+    hideCurrent(context);
+    final cs = Theme.of(context).colorScheme;
     final snackBar = SnackBar(
       content: Row(
         children: [
@@ -79,7 +76,7 @@ class CustomSnackBar {
           Text(message, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
-      backgroundColor: AppColors.primary,
+      backgroundColor: cs.primary,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       duration: autoHideAfter ?? const Duration(minutes: 5),
@@ -89,17 +86,13 @@ class CustomSnackBar {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  /// Oculta el SnackBar actual
   static void hideCurrent(BuildContext context) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
-  /// Limpia todos los SnackBars
   static void clearAll(BuildContext context) {
     ScaffoldMessenger.of(context).clearSnackBars();
   }
-
-  // === MÉTODOS PRIVADOS ===
 
   static void _showSnackBar({
     required BuildContext context,
@@ -145,15 +138,15 @@ class CustomSnackBar {
   }
 
   static Color _getColor(SnackBarType type, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return switch (type) {
-      SnackBarType.success => AppColors.secondary,
-      SnackBarType.error => AppColors.error,
-      SnackBarType.warning => Colors.orange[700]!,
-      SnackBarType.info => Theme.of(context).primaryColor,
+      SnackBarType.success => cs.secondary,
+      SnackBarType.error => cs.error,
+      SnackBarType.warning => const Color(0xFFE65100), // deep orange — visible in both modes
+      SnackBarType.info => cs.primary,
     };
   }
 
-  /// Margen seguro para notch y bordes
   static EdgeInsets _safeMargin(BuildContext context) {
     final padding = MediaQuery.of(context).padding;
     return EdgeInsets.only(

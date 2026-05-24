@@ -181,7 +181,7 @@ class ActionButton extends StatelessWidget {
           backgroundColor: fillColor,
           foregroundColor: foregroundColor,
           elevation: elevation,
-          shadowColor: effectiveColor.withOpacity(0.3),
+          shadowColor: effectiveColor.withValues(alpha: 0.3),
           disabledBackgroundColor: theme.disabledColor,
           minimumSize: Size(
             size == ActionButtonSize.small ? 80 : 100,

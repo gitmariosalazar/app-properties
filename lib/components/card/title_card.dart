@@ -21,13 +21,13 @@ class TitledCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: backgroundColor ?? theme.cardColor,
+        color: backgroundColor ?? cs.surfaceContainerHighest,
         border: Border.all(
-          color: theme.dividerColor.withOpacity(0.3),
+          color: cs.outlineVariant,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(
@@ -35,7 +35,7 @@ class TitledCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.25),
+            color: cs.shadow.withValues(alpha: 0.15),
             blurRadius: elevation,
             offset: const Offset(0, 3),
           ),
@@ -47,7 +47,7 @@ class TitledCard extends StatelessWidget {
           Container(
             padding: ResponsiveUtils.cardPadding(context),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: cs.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(
                   ResponsiveUtils.cardBorderRadius(context),
@@ -66,7 +66,7 @@ class TitledCard extends StatelessWidget {
                     style: (titleStyle ?? ResponsiveUtils.titleSmall(context))
                         .copyWith(
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
+                          color: cs.primary,
                         ),
                     overflow: TextOverflow.ellipsis,
                   ),

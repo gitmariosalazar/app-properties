@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.primary.withOpacity(0.08),
+              theme.colorScheme.primary.withValues(alpha: 0.08),
               theme.colorScheme.surface,
             ],
             begin: Alignment.topCenter,
@@ -75,8 +75,8 @@ class HomeScreen extends StatelessWidget {
                     child: Material(
                       elevation: 5,
                       shape: const CircleBorder(),
-                      color: Colors.white,
-                      shadowColor: theme.colorScheme.primary.withOpacity(0.12),
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      shadowColor: theme.colorScheme.primary.withValues(alpha: 0.12),
                       child: Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.all(isTablet ? 28 : 18),
@@ -100,19 +100,19 @@ class HomeScreen extends StatelessWidget {
                   // Glassmorphic welcome card
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.65),
+                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
                       borderRadius: BorderRadius.circular(
                         context.largeBorderRadiusValue,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: theme.colorScheme.shadow.withValues(alpha: 0.06),
                           blurRadius: 16,
                           offset: const Offset(0, 2),
                         ),
                       ],
                       border: Border.all(
-                        color: theme.colorScheme.primary.withOpacity(0.04),
+                        color: theme.colorScheme.outlineVariant,
                         width: 1.5,
                       ),
                     ),
@@ -135,7 +135,7 @@ class HomeScreen extends StatelessWidget {
                         Text(
                           'Actualización de datos de Predios y Catastro mediante escaneo de códigos QR.',
                           style: context.bodyLarge.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -145,13 +145,13 @@ class HomeScreen extends StatelessWidget {
                   // Menu Buttons in a Card with some separation
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.93),
+                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(
                         context.largeBorderRadiusValue,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: theme.colorScheme.shadow.withValues(alpha: 0.08),
                           blurRadius: 14,
                           offset: const Offset(0, 3),
                         ),
@@ -169,8 +169,8 @@ class HomeScreen extends StatelessWidget {
                           color: theme.colorScheme.primary,
                           gradient: LinearGradient(
                             colors: [
-                              theme.colorScheme.primary.withOpacity(0.92),
-                              theme.colorScheme.primary.withOpacity(0.78),
+                              theme.colorScheme.primary.withValues(alpha: 0.92),
+                              theme.colorScheme.primary.withValues(alpha: 0.78),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -180,10 +180,13 @@ class HomeScreen extends StatelessWidget {
                         SizedBox(height: buttonSpacing),
                         _AnimatedMenuButton(
                           icon: Icons.search_rounded,
-                          label: 'Buscar Acometida',
-                          color: Colors.deepPurple,
+                          label: 'Buscar Predio',
+                          color: theme.colorScheme.secondary,
                           gradient: LinearGradient(
-                            colors: [Colors.deepPurple, Colors.indigoAccent],
+                            colors: [
+                              theme.colorScheme.secondary,
+                              theme.colorScheme.tertiary,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -198,8 +201,8 @@ class HomeScreen extends StatelessWidget {
                           color: theme.colorScheme.secondary,
                           gradient: LinearGradient(
                             colors: [
-                              theme.colorScheme.secondary.withOpacity(0.95),
-                              Colors.orangeAccent.withOpacity(0.8),
+                              theme.colorScheme.secondary.withValues(alpha: 0.95),
+                              Colors.orangeAccent.withValues(alpha: 0.8),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -305,7 +308,7 @@ class _AnimatedMenuButtonState extends State<_AnimatedMenuButton>
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.18),
+                color: widget.color.withValues(alpha: 0.18),
                 blurRadius: 15,
                 offset: const Offset(0, 6),
               ),

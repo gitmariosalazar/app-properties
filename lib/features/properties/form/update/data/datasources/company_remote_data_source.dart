@@ -20,7 +20,7 @@ class CompanyRemoteDataSource {
     required UpdateCompanyRequest request,
   }) async {
     final token = await authLocalDataSource.getToken();
-    final url = Uri.parse('$baseUrl/companies/update-company/$companyRuc');
+    final url = Uri.parse('$baseUrl/Customers/update-company/$companyRuc');
     final response = await client.put(
       url,
       headers: {

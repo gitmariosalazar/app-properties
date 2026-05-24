@@ -29,7 +29,7 @@ class ReadOnlyField extends StatelessWidget {
           label,
           style: (textStyle ?? ResponsiveUtils.bodySmall(context)).copyWith(
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface.withOpacity(0.8),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
           ),
         ),
         ResponsiveUtils.vSpace(context, 0.0035),
@@ -56,7 +56,7 @@ class ReadOnlyField extends StatelessWidget {
                     ResponsiveUtils.extraSmallBorderRadiusValue(context),
                   ),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.5),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -64,11 +64,11 @@ class ReadOnlyField extends StatelessWidget {
                     ResponsiveUtils.extraSmallBorderRadiusValue(context),
                   ),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.5),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
                   ),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surface.withOpacity(0.6),
+                fillColor: theme.colorScheme.surface.withValues(alpha: 0.6),
               ),
               style: textStyle ?? ResponsiveUtils.bodyMedium(context),
             ),
@@ -78,7 +78,7 @@ class ReadOnlyField extends StatelessWidget {
               child: Icon(
                 leftIcon,
                 size: iconSize,
-                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
           ],

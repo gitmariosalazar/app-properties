@@ -60,14 +60,14 @@ class CompanyForm extends StatelessWidget {
             ],
           ),
         ),
-        context.vSpace(0.0),
+        context.vSpace(0.02),
         DynamicFieldList(
           title: 'Correos de la Empresa',
           controllers: emails,
           hint: 'info@empresa.com',
           icon: Icons.email,
         ),
-        context.vSpace(0.0),
+        context.vSpace(0.02),
         DynamicFieldList(
           title: 'Teléfonos de la Empresa',
           controllers: phones,

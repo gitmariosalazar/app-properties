@@ -109,7 +109,11 @@ Future<void> init() async {
     () => AuthRemoteDataSourceImpl(client: sl()),
   );
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(localDataSource: sl(), remoteDataSource: sl()),
+    () => AuthRepositoryImpl(
+      localDataSource: sl(),
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
   );
   sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
   sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(sl()));
@@ -164,7 +168,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<ConnectionWithPropertiesRepository>(
     () => ConnectionWithPropertiesRepositoryImpl(
-      sl<RemoteConnectionWithPropertiesDataSource>(),
+      remoteConnectionWithPropertiesDataSource: sl(),
+      localConnectionDataSource: sl(),
+      networkInfo: sl(),
     ),
   );
   sl.registerLazySingleton<GetConnectionWithProperties>(

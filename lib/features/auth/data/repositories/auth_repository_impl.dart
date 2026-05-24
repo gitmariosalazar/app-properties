@@ -9,6 +9,8 @@ import 'package:app_properties/features/auth/domain/entities/user.dart';
 import 'package:app_properties/features/auth/domain/entities/verify_user_result.dart';
 import 'package:app_properties/features/auth/domain/repositories/auth_repository.dart';
 
+import 'package:app_properties/core/network/network_info.dart';
+
 /// Concrete implementation of [AuthRepository].
 ///
 /// Error taxonomy:
@@ -18,10 +20,12 @@ import 'package:app_properties/features/auth/domain/repositories/auth_repository
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
+  final NetworkInfo networkInfo;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
+    required this.networkInfo,
   });
 
   @override
@@ -29,21 +33,51 @@ class AuthRepositoryImpl implements AuthRepository {
     String usernameOrEmail,
     String password,
   ) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final authResponse = await remoteDataSource.login(
+          usernameOrEmail,
+          password,
+        );
+        debugPrint('AuthResponse: $authResponse');
+        await localDataSource.cacheToken(authResponse.accessToken);
+        await localDataSource.cacheUser(authResponse.user);
+        return Right(authResponse.user);
+      } on NetworkException catch (_) {
+        return _offlineLoginFallback(usernameOrEmail);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, code: e.code));
+      } catch (e) {
+        return Left(ServerFailure(message: e.toString()));
+      }
+    } else {
+      return _offlineLoginFallback(usernameOrEmail);
+    }
+  }
+
+  Future<Either<Failure, User>> _offlineLoginFallback(String usernameOrEmail) async {
     try {
-      final authResponse = await remoteDataSource.login(
-        usernameOrEmail,
-        password,
-      );
-      debugPrint('AuthResponse: $authResponse');
-      await localDataSource.cacheToken(authResponse.accessToken);
-      await localDataSource.cacheUser(authResponse.user);
-      return Right(authResponse.user);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message, code: e.code));
+      final cachedUser = await localDataSource.getUser();
+      final cachedToken = await localDataSource.getToken();
+      
+      if (cachedUser != null && cachedToken != null && cachedToken.isNotEmpty) {
+        final entered = usernameOrEmail.trim().toLowerCase();
+        final cachedName = cachedUser.username.trim().toLowerCase();
+        final cachedEmail = cachedUser.email?.trim().toLowerCase() ?? '';
+        
+        if (entered == cachedName || entered == cachedEmail) {
+          return Right(cachedUser);
+        } else {
+          return Left(CacheFailure(
+            message: 'Las credenciales no coinciden con la última sesión iniciada en este dispositivo.',
+          ));
+        }
+      }
+      return Left(CacheFailure(
+        message: 'No hay ninguna sesión guardada en el dispositivo para iniciar de modo offline.',
+      ));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(CacheFailure(message: 'Error en el inicio de sesión local: $e'));
     }
   }
 

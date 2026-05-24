@@ -1,3 +1,34 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:app_properties/core/network/network_info.dart';
+import 'package:app_properties/core/network/offline_sync_manager.dart';
+import 'package:app_properties/features/properties/search/data/datasources/local_connection_datasource.dart';
+
+// === UPDATE FEATURE ===
+import 'package:app_properties/features/properties/form/update/data/datasources/company_remote_data_source.dart';
+import 'package:app_properties/features/properties/form/update/data/datasources/connection_remote_data_source.dart';
+import 'package:app_properties/features/properties/form/update/data/datasources/customer_remote_data_source.dart';
+import 'package:app_properties/features/properties/form/update/data/datasources/observation_connection_remote_data_source.dart';
+import 'package:app_properties/features/properties/form/update/data/datasources/property_remote_data_source.dart';
+
+import 'package:app_properties/features/properties/form/update/domain/repositories/company_repository.dart';
+import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart' as update_domain_repo;
+import 'package:app_properties/features/properties/form/update/domain/repositories/customer_repository.dart';
+import 'package:app_properties/features/properties/form/update/domain/repositories/observation_connection_repository.dart';
+import 'package:app_properties/features/properties/form/update/domain/repositories/property_repository.dart';
+
+import 'package:app_properties/features/properties/form/update/data/repositories/company_repository_impl.dart';
+import 'package:app_properties/features/properties/form/update/data/repositories/connection_repository_impl.dart' as update_data_repo;
+import 'package:app_properties/features/properties/form/update/data/repositories/customer_repository_impl.dart';
+import 'package:app_properties/features/properties/form/update/data/repositories/observation_connection_repository_impl.dart';
+import 'package:app_properties/features/properties/form/update/data/repositories/property_repository_impl.dart';
+
+import 'package:app_properties/features/properties/form/update/domain/usecases/update_company.dart';
+import 'package:app_properties/features/properties/form/update/domain/usecases/update_connection.dart';
+import 'package:app_properties/features/properties/form/update/domain/usecases/update_customer.dart';
+import 'package:app_properties/features/properties/form/update/domain/usecases/update_property.dart';
+import 'package:app_properties/features/properties/form/update/domain/usecases/add_observation_connection.dart';
+
 import 'package:app_properties/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:app_properties/features/auth/domain/usecases/check_auth_status_usecase.dart';
 import 'package:app_properties/features/auth/domain/usecases/logout_usecase.dart';
@@ -146,7 +177,11 @@ Future<void> init() async {
     () => RemoteConnectionDataSourceImpl(sl<http.Client>(), sl<AuthLocalDataSource>()),
   );
   sl.registerLazySingleton<ConnectionRepository>(
-    () => ConnectionRepositoryImpl(sl<RemoteConnectionDataSource>()),
+    () => ConnectionRepositoryImpl(
+      remoteConnectionDataSource: sl(),
+      localConnectionDataSource: sl(),
+      networkInfo: sl(),
+    ),
   );
   sl.registerLazySingleton<GetConnection>(
     () => GetConnection(sl<ConnectionRepository>()),
@@ -216,7 +251,73 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<GetThemeMode>(() => GetThemeMode(sl()));
   sl.registerLazySingleton<SaveThemeMode>(() => SaveThemeMode(sl()));
-  sl.registerSingleton<ThemeCubit>(
-    ThemeCubit(getThemeMode: sl(), saveThemeMode: sl()),
+  sl.registerLazySingleton<ThemeCubit>(
+    () => ThemeCubit(getThemeMode: sl(), saveThemeMode: sl()),
   );
+
+  // ==========================
+  // OFFLINE & CORE NETWORK
+  // ==========================
+  sl.registerLazySingleton(() => Connectivity());
+  sl.registerLazySingleton(() => InternetConnectionChecker.instance);
+  sl.registerLazySingleton<NetworkInfo>(
+    () => NetworkInfoImpl(connectivity: sl(), connectionChecker: sl()),
+  );
+  sl.registerLazySingleton<LocalConnectionDataSource>(
+    () => LocalConnectionDataSourceImpl(sharedPreferences: sl()),
+  );
+  sl.registerLazySingleton<OfflineSyncManager>(
+    () => OfflineSyncManager(sharedPreferences: sl(), networkInfo: sl()),
+  );
+
+  // ==========================
+  // UPDATE FEATURE (DATA & DOMAIN)
+  // ==========================
+  sl.registerLazySingleton(() => ConnectionRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+  sl.registerLazySingleton(() => CompanyRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+  sl.registerLazySingleton(() => CustomerRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+  sl.registerLazySingleton(() => PropertyRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+  sl.registerLazySingleton(() => ObservationConnectionRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+
+  sl.registerLazySingleton<update_domain_repo.ConnectionRepository>(
+    () => update_data_repo.ConnectionRepositoryImpl(
+      remoteDataSource: sl(),
+      offlineSyncManager: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  sl.registerLazySingleton<CompanyRepository>(
+    () => CompanyRepositoryImpl(
+      remoteDataSource: sl(),
+      offlineSyncManager: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  sl.registerLazySingleton<CustomerRepository>(
+    () => CustomerRepositoryImpl(
+      remoteDataSource: sl(),
+      offlineSyncManager: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  sl.registerLazySingleton<PropertyRepository>(
+    () => PropertyRepositoryImpl(
+      remoteDataSource: sl(),
+      offlineSyncManager: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  sl.registerLazySingleton<ObservationConnectionRepository>(
+    () => ObservationConnectionRepositoryImpl(
+      remoteDataSource: sl(),
+      offlineSyncManager: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton(() => UpdateConnectionUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateCompanyUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateCustomerUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePropertyUseCase(sl()));
+  sl.registerLazySingleton(() => AddObservationConnectionUseCase(sl()));
 }

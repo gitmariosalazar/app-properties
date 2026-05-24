@@ -13,7 +13,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_properties/core/di/injection.dart';
-import 'package:app_properties/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app_properties/components/button/widget_button.dart';
 import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/common/form_card.dart';
@@ -21,16 +20,6 @@ import 'package:app_properties/utils/date_utils.dart';
 import 'package:app_properties/utils/responsive_utils.dart';
 import 'package:app_properties/utils/validators.dart';
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
-import 'package:app_properties/features/properties/form/update/data/datasources/company_remote_data_source.dart';
-import 'package:app_properties/features/properties/form/update/data/datasources/connection_remote_data_source.dart';
-import 'package:app_properties/features/properties/form/update/data/datasources/customer_remote_data_source.dart';
-import 'package:app_properties/features/properties/form/update/data/datasources/property_remote_data_source.dart';
-import 'package:app_properties/features/properties/form/update/data/datasources/observation_connection_remote_data_source.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/company_repository_impl.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/connection_repository_impl.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/customer_repository_impl.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/property_repository_impl.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/observation_connection_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/company_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/customer_repository.dart';
@@ -807,14 +796,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
 
   // === USECASES ===
   Future<void> _updateNaturalPerson(http.Client client) async =>
-      await UpdateCustomerUseCase(
-        CustomerRepositoryImpl(
-          remoteDataSource: CustomerRemoteDataSource(
-            client: client,
-            authLocalDataSource: sl<AuthLocalDataSource>(),
-          ),
-        ),
-      )(
+      await sl<UpdateCustomerUseCase>()(
         customerId: _identificationCtrl.text,
         params: UpdateCustomerParams(
           firstName: _firstNameCtrl.text,
@@ -840,14 +822,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       );
 
   Future<void> _updateCompany(http.Client client) async =>
-      await UpdateCompanyUseCase(
-        CompanyRepositoryImpl(
-          remoteDataSource: CompanyRemoteDataSource(
-            client: client,
-            authLocalDataSource: sl<AuthLocalDataSource>(),
-          ),
-        ),
-      )(
+      await sl<UpdateCompanyUseCase>()(
         companyRuc: _rucCtrl.text,
         params: UpdateCompanyParams(
           companyName: _companyNameCtrl.text,
@@ -873,14 +848,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     final alt = double.tryParse(_accuracyCtrl.text) ?? 0.0;
     final prec = double.tryParse(_precisionCtrl.text) ?? 0.0;
 
-    await UpdateConnectionUseCase(
-      ConnectionRepositoryImpl(
-        remoteDataSource: ConnectionRemoteDataSource(
-          client: client,
-          authLocalDataSource: sl<AuthLocalDataSource>(),
-        ),
-      ),
-    )(
+    await sl<UpdateConnectionUseCase>()(
       connectionId: widget.connection.connectionId,
       params: UpdateConnectionParams(
         clientId: _isNaturalPerson ? _identificationCtrl.text : _rucCtrl.text,
@@ -922,14 +890,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   }
 
   Future<void> _addObservation(http.Client client) async =>
-      await AddObservationConnectionUseCase(
-        ObservationConnectionRepositoryImpl(
-          remoteDataSource: ObservationConnectionRemoteDataSource(
-            client: client,
-            authLocalDataSource: sl<AuthLocalDataSource>(),
-          ),
-        ),
-      )(
+      await sl<AddObservationConnectionUseCase>()(
         params: CreateObservationParams(
           connectionId: _observationConnectionIdCtrl.text,
           observationTitle: _observationTitleCtrl.text,
@@ -938,14 +899,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       );
 
   Future<void> _updateProperty(http.Client client) async =>
-      await UpdatePropertyUseCase(
-        PropertyRepositoryImpl(
-          remoteDataSource: PropertyRemoteDataSource(
-            client: client,
-            authLocalDataSource: sl<AuthLocalDataSource>(),
-          ),
-        ),
-      )(
+      await sl<UpdatePropertyUseCase>()(
         cadastralKey: _propertyCadastralKeyCtrl.text,
         params: UpdatePropertyParams(
           propertyClientId: _isNaturalPerson

@@ -193,23 +193,22 @@ class HomeScreen extends StatelessWidget {
                           onPressed: () =>
                               context.push('/manually-entry-properties'),
                         ),
-                        //SizedBox(height: buttonSpacing),
-                        /*
+                        SizedBox(height: buttonSpacing),
                         _AnimatedMenuButton(
-                          icon: Icons.note_alt_rounded,
-                          label: 'Ver Observaciones',
-                          color: theme.colorScheme.secondary,
+                          icon: Icons.cloud_download_rounded,
+                          label: 'Carga Offline (Pre-descarga)',
+                          color: Colors.orangeAccent,
                           gradient: LinearGradient(
                             colors: [
-                              theme.colorScheme.secondary.withValues(alpha: 0.95),
-                              Colors.orangeAccent.withValues(alpha: 0.8),
+                              Colors.orange,
+                              Colors.deepOrangeAccent,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          onPressed: () => context.push('/observations'),
+                          onPressed: () =>
+                              context.push('/offline-preload'),
                         ),
-                        */
                       ],
                     ),
                   ),

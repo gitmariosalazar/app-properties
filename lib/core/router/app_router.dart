@@ -20,6 +20,8 @@ import 'package:app_properties/features/properties/search/presentation/info/page
 import 'package:app_properties/features/properties/search/presentation/info/cubit/search_connection_cubit.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/detail_page.dart';
 
+import 'package:app_properties/features/properties/search/presentation/offline/pages/offline_preload_screen.dart';
+
 // === BLOCs ===
 import 'package:app_properties/features/properties/search/presentation/scan/blocs/connection_with_properties_bloc.dart';
 import 'package:app_properties/features/observations/presentation/bloc/observation_bloc.dart';
@@ -149,6 +151,10 @@ class AppRouter {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/offline-preload',
+        builder: (context, state) => const OfflinePreloadScreen(),
       ),
     ],
   );

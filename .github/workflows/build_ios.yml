@@ -8,7 +8,7 @@ on:
       - master
       - developer
       - develop
-  workflow_dispatch: # Permite compilar manualmente con un clic desde el panel de GitHub
+  workflow_dispatch: # Permite compilar manualmente con un clic desde el panel de GitHub.
 
 jobs:
   build:

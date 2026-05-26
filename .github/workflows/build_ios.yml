@@ -25,12 +25,11 @@ jobs:
           echo "${{ secrets.ENV_PROD }}" > .env
           echo "${{ secrets.ENV_PROD }}" > .env.dev
 
-      # 2. Configurar el SDK de Flutter en el servidor macOS de GitHub
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2.16.0
-        with:
-          channel: 'stable'
-          cache: true
+      # 2. Descargar e instalar el SDK de Flutter de forma manual usando Git (Resistente a fallos de GitHub Codeload)
+      - name: Set up Flutter manually
+        run: |
+          git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
 
       - name: Disable Swift Package Manager (SPM)
         run: |

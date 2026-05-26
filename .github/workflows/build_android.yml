@@ -32,12 +32,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      # 3. Configurar el SDK de Flutter
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2.16.0
-        with:
-          channel: 'stable'
-          cache: true
+      # 3. Descargar e instalar el SDK de Flutter de forma manual usando Git (Resistente a fallos de GitHub Codeload)
+      - name: Set up Flutter manually
+        run: |
+          git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
 
       # 4. Instalar dependencias
       - name: Install dependencies

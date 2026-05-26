@@ -27,7 +27,7 @@ jobs:
 
       # 2. Configurar el SDK de Flutter en el servidor macOS de GitHub
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v2.16.0
         with:
           channel: 'stable'
           cache: true

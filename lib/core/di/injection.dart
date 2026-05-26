@@ -73,6 +73,7 @@ import 'package:app_properties/features/properties/search/data/repositories/conn
 import 'package:app_properties/features/properties/search/data/repositories/connection_repository_impl.dart';
 import 'package:app_properties/features/properties/search/domain/repositories/connection_with_properties_repository.dart';
 import 'package:app_properties/features/properties/search/domain/usecases/get_connection_with_properties.dart';
+import 'package:app_properties/features/properties/search/domain/usecases/find_property_with_client.dart';
 import 'package:app_properties/features/properties/search/presentation/scan/blocs/connection_with_properties_bloc.dart';
 import 'package:app_properties/features/properties/search/presentation/manually/blocs/index.dart';
 import 'package:app_properties/features/properties/search/presentation/info/cubit/search_connection_cubit.dart';
@@ -191,6 +192,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<GetConnection>(
     () => GetConnection(sl<ConnectionRepository>()),
+  );
+  sl.registerLazySingleton<FindPropertyWithClient>(
+    () => FindPropertyWithClient(sl<ConnectionRepository>()),
   );
   sl.registerFactory<SearchConnectionCubit>(
     () => SearchConnectionCubit(sl<GetConnection>()),

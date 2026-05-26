@@ -4,6 +4,7 @@ import 'package:app_properties/features/properties/form/add-img/presentation/blo
 import 'package:app_properties/features/properties/form/add-img/presentation/blocs/add_property_image_state.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
+import 'package:app_properties/features/properties/search/domain/entities/property.dart';
 import 'package:app_properties/utils/convert_coordinates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -356,12 +357,23 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         DateTime.now().toIso8601String();
     _geometricZoneCtrl.text = conn.connectionGeometricZone ?? '';
 
-    final firstProp = conn.properties?.isNotEmpty == true
-        ? conn.properties!.first
-        : null;
-    _propertyCadastralKeyCtrl.text = firstProp?.propertyCadastralKey ?? 'N/A';
-    _propertyAddressCtrl.text = firstProp?.propertyAddress ?? 'N/A';
-    _alleywayCtrl.text = firstProp?.propertyAlleyway ?? 'N/A';
+    final actualLinkedKey = conn.propertyCadastralKey;
+    PropertyEntity? linkedProp;
+
+    if (actualLinkedKey != null && actualLinkedKey.isNotEmpty && actualLinkedKey != 'N/A') {
+      if (conn.properties?.isNotEmpty == true) {
+        for (var p in conn.properties!) {
+          if (p.propertyCadastralKey == actualLinkedKey) {
+            linkedProp = p;
+            break;
+          }
+        }
+      }
+    }
+
+    _propertyCadastralKeyCtrl.text = actualLinkedKey ?? 'N/A';
+    _propertyAddressCtrl.text = linkedProp?.propertyAddress ?? 'N/A';
+    _alleywayCtrl.text = linkedProp?.propertyAlleyway ?? 'N/A';
 
     _observationConnectionIdCtrl.text = conn.connectionId;
     _observationTitleCtrl.text = 'Actualización de Acometida y Predio';
@@ -507,50 +519,26 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: cs.secondary,
-        behavior: SnackBarBehavior.floating,
-      ),
+    CustomOverlaySnackBar.show(
+      context: context,
+      message: message,
+      type: SnackBarType.info,
     );
   }
 
   void _showErrorSnackBar(String message, {VoidCallback? onRetry}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: cs.error,
-        behavior: SnackBarBehavior.floating,
-        action: onRetry != null
-            ? SnackBarAction(
-                label: 'Reintentar',
-                textColor: Colors.white,
-                onPressed: onRetry,
-              )
-            : null,
-        duration: const Duration(seconds: 5),
-      ),
+    CustomOverlaySnackBar.show(
+      context: context,
+      message: message,
+      type: SnackBarType.error,
     );
   }
 
   void _showSuccess() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            context.hSpace(0.01),
-            Text(
-              '¡Datos actualizados correctamente!',
-              style: context.bodyMedium.copyWith(color: Colors.white),
-            ),
-          ],
-        ),
-        backgroundColor: cs.secondary,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
+    CustomOverlaySnackBar.show(
+      context: context,
+      message: '¡Datos actualizados correctamente!',
+      type: SnackBarType.success,
     );
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -666,8 +654,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
       final hasValidProperty =
           _propertyCadastralKeyCtrl.text != 'N/A' &&
           _propertyCadastralKeyCtrl.text.isNotEmpty;
-      if (hasValidProperty ||
-          widget.connection.properties?.isNotEmpty == true) {
+      if (hasValidProperty) {
         await _updateProperty(client);
         CustomOverlaySnackBar.show(
           context: context,
@@ -867,7 +854,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         longitude: lng,
         latitude: lat,
         connectionReference: _referenceCtrl.text,
-        propertyCadastralKey: _propertyCadastralKeyCtrl.text == 'N/A'
+        propertyCadastralKey: (_propertyCadastralKeyCtrl.text.isEmpty ||
+                _propertyCadastralKeyCtrl.text == 'N/A')
             ? null
             : _propertyCadastralKeyCtrl.text,
         connectionMetaData: {
@@ -1458,6 +1446,7 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     child: Form(
       key: _formKeys[2],
       child: PropertyForm(
+        clientId: _isNaturalPerson ? _identificationCtrl.text : _rucCtrl.text,
         propertyCadastralKeyCtrl: _propertyCadastralKeyCtrl,
         propertyAddressCtrl: _propertyAddressCtrl,
         alleywayCtrl: _alleywayCtrl,
@@ -1465,14 +1454,23 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         constructionAreaCtrl: _constructionAreaCtrl,
         landValueCtrl: _landValueCtrl,
         constructionValueCtrl: _constructionValueCtrl,
-        properties: widget.connection.properties,
         onPropertySelected: (property) {
           setState(() {
-            _propertyCadastralKeyCtrl.text = property.propertyCadastralKey;
-            _propertyAddressCtrl.text = property.propertyAddress;
-            _alleywayCtrl.text = property.propertyAlleyway;
+            if (property == null) {
+              _propertyCadastralKeyCtrl.text = 'N/A';
+              _propertyAddressCtrl.text = '';
+              _alleywayCtrl.text = '';
+            } else {
+              _propertyCadastralKeyCtrl.text = property.propertyCadastralKey ?? 'N/A';
+              _propertyAddressCtrl.text = property.propertyAddress ?? '';
+              _alleywayCtrl.text = property.propertyAlleyway ?? '';
+            }
           });
-          _showSnackBar('Propiedad cargada: ${property.propertyAddress}');
+          if (property != null) {
+            _showSnackBar('Propiedad cargada: ${property.propertyAddress}');
+          } else {
+            _showSnackBar('Predio desasociado (vacío)');
+          }
         },
       ),
     ),

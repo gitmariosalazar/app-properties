@@ -16,6 +16,8 @@ extension ConnectionMapper on dto.ConnectionResponse {
       connectionRateId: connectionRateId ?? 0,
       connectionRateName: connectionRateName,
       connectionMeterNumber: connectionMeterNumber,
+      connectionMeterNumberPreview: connectionMeterNumberPreview,
+      connectionMeterNumberCurrent: connectionMeterNumberCurrent,
       connectionSector: connectionSector ?? 0,
       connectionAccount: connectionAccount ?? 0,
       connectionCadastralKey: connectionCadastralKey,

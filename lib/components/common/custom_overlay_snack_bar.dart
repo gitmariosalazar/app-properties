@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 enum SnackBarType { success, error, warning, info }
 
 /// Static helper to show themed overlay toast notifications.
-/// Colors derived from [ColorScheme] tokens — adapts to light/dark.
+/// Colors derived from premium curated dark palettes — adapts to light/dark.
 class CustomOverlaySnackBar {
   static final List<_SnackBarEntry> _entries = [];
 
@@ -12,12 +12,13 @@ class CustomOverlaySnackBar {
     required BuildContext context,
     required String message,
     required SnackBarType type,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 4),
     VoidCallback? onDismissed,
   }) {
     final overlay = Overlay.of(context);
     final cs = Theme.of(context).colorScheme;
     final key = UniqueKey();
+    
     final entry = _SnackBarEntry(
       key: key,
       message: message,
@@ -48,7 +49,7 @@ class CustomOverlaySnackBar {
     final paddingTop = MediaQuery.of(overlay.context).padding.top;
     for (int i = 0; i < _entries.length; i++) {
       final entry = _entries[i];
-      entry.targetTop = paddingTop + (i * 50);
+      entry.targetTop = paddingTop + 12 + (i * 86); // 86px staggered spacing to prevent overlap
       entry.overlayEntry.markNeedsBuild();
     }
   }
@@ -125,11 +126,11 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
   @override
   void initState() {
     super.initState();
-    _currentTop = widget.targetTop - 70;
+    _currentTop = widget.targetTop - 80;
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
 
     _fadeAnimation = Tween<double>(
@@ -138,9 +139,9 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
+      begin: const Offset(0, -0.6),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _positionAnimation = Tween<double>(
       begin: _currentTop,
@@ -179,26 +180,22 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
     super.dispose();
   }
 
-  Color _resolveColor() {
-    final cs = widget.colorScheme;
-    return switch (widget.type) {
-      SnackBarType.success => cs.secondary,
-      SnackBarType.error => cs.error,
-      SnackBarType.warning => const Color(0xFFE65100),
-      SnackBarType.info => cs.primary,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final icon = switch (widget.type) {
-      SnackBarType.success => Icons.check_circle,
-      SnackBarType.error => Icons.error,
-      SnackBarType.warning => Icons.warning_amber,
-      SnackBarType.info => Icons.info,
+      SnackBarType.success => Icons.check_circle_outline_rounded,
+      SnackBarType.error => Icons.error_outline_rounded,
+      SnackBarType.warning => Icons.warning_amber_rounded,
+      SnackBarType.info => Icons.info_outline_rounded,
     };
 
-    final color = _resolveColor();
+    // Premium custom dark background and accent colors for high aesthetics
+    final (bgColor, accentColor) = switch (widget.type) {
+      SnackBarType.success => (const Color(0xFF132A1C), const Color(0xFF2ECC71)),
+      SnackBarType.error => (const Color(0xFF2C1919), const Color(0xFFE74C3C)),
+      SnackBarType.warning => (const Color(0xFF2C2216), const Color(0xFFF39C12)),
+      SnackBarType.info => (const Color(0xFF142433), const Color(0xFF3498DB)),
+    };
 
     return AnimatedBuilder(
       animation: _controller,
@@ -214,47 +211,74 @@ class _SnackBarWidgetState extends State<_SnackBarWidget>
               position: _slideAnimation,
               child: Material(
                 color: Colors.transparent,
-                child: GestureDetector(
-                  onTap: _dismiss,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: bgColor.withValues(alpha: 0.96),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.35),
+                      width: 1.5,
                     ),
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(icon, color: Colors.white, size: 20),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            widget.message,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                bottomLeft: Radius.circular(16),
+                              ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: _dismiss,
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 18,
+                          const SizedBox(width: 14),
+                          Icon(icon, color: accentColor, size: 24),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 14.0),
+                              child: Text(
+                                widget.message,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14.0,
+                                  height: 1.25,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white60,
+                              size: 18,
+                            ),
+                            onPressed: _dismiss,
+                            splashRadius: 20,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                      ),
                     ),
                   ),
                 ),

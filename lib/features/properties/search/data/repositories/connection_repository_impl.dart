@@ -3,7 +3,9 @@ import 'package:app_properties/features/properties/search/data/datasources/local
 import 'package:app_properties/features/properties/search/data/datasources/remote_connection_datasource.dart';
 import 'package:app_properties/features/properties/search/data/mappers/connection_mapper.dart';
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
+import 'package:app_properties/features/properties/search/domain/entities/property_with_client.dart';
 import 'package:app_properties/features/properties/search/domain/repositories/connection_with_properties_repository.dart';
+import 'package:flutter/foundation.dart';
 
 class ConnectionRepositoryImpl implements ConnectionRepository {
   final RemoteConnectionDataSource remoteConnectionDataSource;
@@ -46,6 +48,30 @@ class ConnectionRepositoryImpl implements ConnectionRepository {
       throw Exception(
         'Sin conexión a internet y no se encontró registro local para: $searchValue',
       );
+    }
+  }
+
+  @override
+  Future<List<PropertyWithClientEntity>> findPropertyWithClientByCadastralKeyOrCardIdOrLikeName(
+    String searchValue, {
+    int? limit,
+    int? offset,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final dtos = await remoteConnectionDataSource
+            .findPropertyWithClientByCadastralKeyOrCardIdOrLikeName(
+          searchValue,
+          limit: limit,
+          offset: offset,
+        );
+        return dtos.map((e) => e.toEntity()).toList();
+      } catch (e) {
+        debugPrint('Error in findPropertyWithClient: $e');
+        rethrow;
+      }
+    } else {
+      throw Exception('Sin conexión a internet para realizar la búsqueda de predios');
     }
   }
 }

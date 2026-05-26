@@ -9,6 +9,7 @@ import 'package:app_properties/features/properties/search/domain/services/docume
 import 'package:app_properties/components/badge/custom_badge.dart';
 import 'package:app_properties/utils/convert_coordinates.dart';
 import 'package:app_properties/features/properties/form/documents/domain/usecases/upload_document_usecase.dart';
+import 'package:app_properties/components/common/custom_overlay_snack_bar.dart';
 
 class DetailPage extends StatefulWidget {
   final String cadastralKey;
@@ -76,28 +77,18 @@ class _DetailPageState extends State<DetailPage> {
 
     try {
       final exportService = di.sl<DocumentExportService>();
-      
+
       // 1. Generar los bytes del PDF para subirlos al servidor (en memoria local, es muy veloz)
-      final pdfBytes = await exportService.generateConnectionActaBytes(_connection!);
+      final pdfBytes = await exportService.generateConnectionActaBytes(
+        _connection!,
+      );
 
       // 2. Mostrar inmediatamente el mensaje de generación exitosa del acta
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text('¡Acta de Inspección generada con éxito!'),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: '¡Acta de Inspección generada con éxito!',
+          type: SnackBarType.success,
         );
       }
 
@@ -113,37 +104,25 @@ class _DetailPageState extends State<DetailPage> {
         nivelAcceso: 'PUBLICO',
         rolesPermitidos: ['ADMIN'],
         metadatosExtras: {
-          'observacion': 'Acta generada automáticamente desde la aplicación móvil.'
+          'observacion':
+              'Acta generada automáticamente desde la aplicación móvil.',
         },
       ).then((uploadResult) {
         if (mounted) {
           uploadResult.fold(
             (failure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
+              CustomOverlaySnackBar.show(
+                context: context,
+                message:
                     'Acta guardada, pero no se pudo sincronizar en el servidor: ${failure.message}',
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  behavior: SnackBarBehavior.floating,
-                ),
+                type: SnackBarType.warning,
               );
             },
             (uploadedDoc) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Row(
-                    children: [
-                      Icon(Icons.cloud_done_rounded, color: Colors.white),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text('¡Acta respaldada con éxito en el servidor!'),
-                      ),
-                    ],
-                  ),
-                  backgroundColor: Colors.blueAccent,
-                  behavior: SnackBarBehavior.floating,
-                ),
+              CustomOverlaySnackBar.show(
+                context: context,
+                message: '¡Acta respaldada con éxito en el servidor!',
+                type: SnackBarType.success,
               );
             },
           );
@@ -154,12 +133,10 @@ class _DetailPageState extends State<DetailPage> {
       await exportService.exportConnectionActa(_connection!);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al generar el acta de inspección: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            behavior: SnackBarBehavior.floating,
-          ),
+        CustomOverlaySnackBar.show(
+          context: context,
+          message: 'Error al generar el acta de inspección: $e',
+          type: SnackBarType.error,
         );
       }
     } finally {
@@ -397,6 +374,12 @@ class _DetailPageState extends State<DetailPage> {
                       Icons.speed_rounded,
                       'Nº de Medidor:',
                       conn.connectionMeterNumber ?? 'Sin Medidor',
+                    ),
+                    _buildDetailRow(
+                      theme,
+                      Icons.speed_rounded,
+                      'Nº de Medidor Ant:',
+                      conn.connectionMeterNumberPreview ?? 'Sin Medidor',
                     ),
                     _buildDetailRow(
                       theme,

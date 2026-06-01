@@ -93,11 +93,6 @@ class PropertyImageRemoteDataSourceImpl
       final streamedResponse = await request.send();
       final responseBody = await streamedResponse.stream.bytesToString();
 
-      developer.log('Response status: ${streamedResponse.statusCode}');
-      developer.log(
-        'Response body: ${responseBody.substring(0, responseBody.length > 200 ? 200 : responseBody.length)}...',
-      );
-
       if (streamedResponse.statusCode == 200 ||
           streamedResponse.statusCode == 201) {
         final jsonResponse = jsonDecode(responseBody) as Map<String, dynamic>;

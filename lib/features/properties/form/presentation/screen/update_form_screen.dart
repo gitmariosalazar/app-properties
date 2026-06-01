@@ -5,6 +5,7 @@ import 'package:app_properties/features/properties/form/add-img/presentation/blo
 import 'package:app_properties/features/properties/form/presentation/widgets/connection/images_section.dart';
 import 'package:app_properties/features/properties/form/presentation/widgets/property/property_form.dart';
 import 'package:app_properties/features/properties/search/domain/entities/property.dart';
+import 'package:app_properties/features/properties/search/presentation/info/components/readings_history_table.dart';
 import 'package:app_properties/utils/convert_coordinates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -360,7 +361,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
     final actualLinkedKey = conn.propertyCadastralKey;
     PropertyEntity? linkedProp;
 
-    if (actualLinkedKey != null && actualLinkedKey.isNotEmpty && actualLinkedKey != 'N/A') {
+    if (actualLinkedKey != null &&
+        actualLinkedKey.isNotEmpty &&
+        actualLinkedKey != 'N/A') {
       if (conn.properties?.isNotEmpty == true) {
         for (var p in conn.properties!) {
           if (p.propertyCadastralKey == actualLinkedKey) {
@@ -854,7 +857,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         longitude: lng,
         latitude: lat,
         connectionReference: _referenceCtrl.text,
-        propertyCadastralKey: (_propertyCadastralKeyCtrl.text.isEmpty ||
+        propertyCadastralKey:
+            (_propertyCadastralKeyCtrl.text.isEmpty ||
                 _propertyCadastralKeyCtrl.text == 'N/A')
             ? null
             : _propertyCadastralKeyCtrl.text,
@@ -1386,11 +1390,6 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
             ),
           ),
           context.vSpace(0.02),
-          ImagesSection(
-            connectionId: widget.connection.connectionId,
-            description: 'Actualización de acometida desde móvil',
-          ),
-          context.vSpace(0.02),
           GpsSection(
             latitudeCtrl: _latitudeCtrl,
             longitudeCtrl: _longitudeCtrl,
@@ -1406,6 +1405,15 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
             isGettingLocation: _isGettingLocation,
             animationController: _animationController,
             scaleAnimation: _scaleAnimation,
+          ),
+
+          context.vSpace(0.02),
+          FormCard(
+            title: 'Historial de Lecturas',
+            child: ReadingsHistoryTable(
+              readings: widget.connection.lastReading,
+              limit: 5,
+            ),
           ),
         ],
       ),
@@ -1461,7 +1469,8 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
               _propertyAddressCtrl.text = '';
               _alleywayCtrl.text = '';
             } else {
-              _propertyCadastralKeyCtrl.text = property.propertyCadastralKey ?? 'N/A';
+              _propertyCadastralKeyCtrl.text =
+                  property.propertyCadastralKey ?? 'N/A';
               _propertyAddressCtrl.text = property.propertyAddress ?? '';
               _alleywayCtrl.text = property.propertyAlleyway ?? '';
             }

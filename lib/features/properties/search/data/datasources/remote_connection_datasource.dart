@@ -43,7 +43,6 @@ class RemoteConnectionDataSourceImpl implements RemoteConnectionDataSource {
     );
 
     debugPrint('Response status: ${response.statusCode}');
-    debugPrint('Response body: ${response.body}');
 
     if (token == null) {
       throw Exception('Token no encontrado');
@@ -112,11 +111,11 @@ class RemoteConnectionDataSourceImpl implements RemoteConnectionDataSource {
     int? offset,
   }) async {
     final token = await authLocalDataSource.getToken();
-    
+
     final Map<String, String> queryParams = {};
     if (limit != null) queryParams['limit'] = limit.toString();
     if (offset != null) queryParams['offset'] = offset.toString();
-    
+
     final uri = Uri.parse(
       '$baseUrl/connections/find-property-with-client-by-cadastral-key-or-card-id-or-like-name/$searchValue',
     ).replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
@@ -128,9 +127,6 @@ class RemoteConnectionDataSourceImpl implements RemoteConnectionDataSource {
         'Authorization': 'Bearer $token',
       },
     );
-
-    debugPrint('Response status for find-property-with-client: ${response.statusCode}');
-    debugPrint('Response body: ${response.body}');
 
     if (token == null || token.isEmpty) {
       throw Exception('Token no encontrado');
@@ -161,7 +157,11 @@ class RemoteConnectionDataSourceImpl implements RemoteConnectionDataSource {
       List<PropertyWithClientResponse> results = [];
       if (rawData is List) {
         results = rawData
-            .map((e) => PropertyWithClientResponse.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) => PropertyWithClientResponse.fromJson(
+                e as Map<String, dynamic>,
+              ),
+            )
             .toList();
       } else if (rawData is Map<String, dynamic>) {
         results = [PropertyWithClientResponse.fromJson(rawData)];

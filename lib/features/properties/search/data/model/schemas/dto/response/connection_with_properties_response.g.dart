@@ -26,6 +26,27 @@ Map<String, dynamic> _$EmailToJson(Email instance) => <String, dynamic>{
   'email': instance.email,
 };
 
+LastReading _$LastReadingFromJson(Map<String, dynamic> json) => LastReading(
+  cadastralKey: json['cadastralKey'] as String,
+  readingDate: json['readingDate'] as String?,
+  readingTime: json['readingTime'] as String?,
+  readingMonth: json['readingMonth'] as String?,
+  readingValueCurrent: (json['readingValueCurrent'] as num?)?.toDouble(),
+  readingValuePreview: (json['readingValuePreview'] as num?)?.toDouble(),
+  novelty: json['novelty'] as String?,
+);
+
+Map<String, dynamic> _$LastReadingToJson(LastReading instance) =>
+    <String, dynamic>{
+      'cadastralKey': instance.cadastralKey,
+      'readingDate': instance.readingDate,
+      'readingTime': instance.readingTime,
+      'readingMonth': instance.readingMonth,
+      'readingValueCurrent': instance.readingValueCurrent,
+      'readingValuePreview': instance.readingValuePreview,
+      'novelty': instance.novelty,
+    };
+
 Person _$PersonFromJson(Map<String, dynamic> json) => Person(
   personId: _toStringNonNull(json['personId']),
   firstName: json['firstName'] as String?,
@@ -164,6 +185,9 @@ ConnectionWithPropertiesResponse _$ConnectionWithPropertiesResponseFromJson(
   properties: (json['properties'] as List<dynamic>?)
       ?.map((e) => Property.fromJson(e as Map<String, dynamic>))
       .toList(),
+  lastReading: (json['lastReadings'] as List<dynamic>?)
+      ?.map((e) => LastReading.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$ConnectionWithPropertiesResponseToJson(
@@ -201,4 +225,5 @@ Map<String, dynamic> _$ConnectionWithPropertiesResponseToJson(
   'person': instance.person?.toJson(),
   'company': instance.company?.toJson(),
   'properties': instance.properties?.map((e) => e.toJson()).toList(),
+  'lastReadings': instance.lastReading?.map((e) => e.toJson()).toList(),
 };

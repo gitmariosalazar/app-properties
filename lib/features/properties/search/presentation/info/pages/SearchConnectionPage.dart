@@ -61,7 +61,7 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
             Icons.arrow_back_ios_new_rounded,
             color: Colors.white,
           ),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : null,
         ),
         backgroundColor: cs.primary,
         elevation: 0,
@@ -171,7 +171,7 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
       if (_activeFilter == 'inactivos') {
         return item.connectionStateId != 1;
       }
-      return item.connectionStateId == 1;
+      return true; // 'todos': mostrar todos sin filtrar
     }).toList();
 
     if (filtered.isEmpty) {

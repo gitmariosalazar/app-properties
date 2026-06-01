@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
 import 'package:app_properties/features/properties/search/domain/entities/contact.dart';
+import 'package:app_properties/features/properties/search/presentation/info/components/readings_history_table.dart';
 
 class ConnectionDetailsSheet extends StatelessWidget {
   final ConnectionEntity connection;
 
-  const ConnectionDetailsSheet({
-    super.key,
-    required this.connection,
-  });
+  const ConnectionDetailsSheet({super.key, required this.connection});
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +21,7 @@ class ConnectionDetailsSheet extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(28),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.15),
@@ -98,9 +94,7 @@ class ConnectionDetailsSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    _buildStatusBadgeInModal(
-                      connection.connectionStateId ?? 0,
-                    ),
+                    _buildStatusBadgeInModal(connection.connectionStateId ?? 0),
                   ],
                 ),
               ),
@@ -145,8 +139,7 @@ class ConnectionDetailsSheet extends StatelessWidget {
                         cs,
                         Icons.assignment_rounded,
                         'Número de Contrato',
-                        connection.connectionContractNumber ??
-                            'Sin Contrato',
+                        connection.connectionContractNumber ?? 'Sin Contrato',
                       ),
                       _buildDetailItem(
                         theme,
@@ -176,11 +169,23 @@ class ConnectionDetailsSheet extends StatelessWidget {
                         cs,
                         Icons.chrome_reader_mode_rounded,
                         'Lectura Habilitada',
-                        connection.connectionIsReadable == true
-                            ? 'Sí'
-                            : 'No',
+                        connection.connectionIsReadable == true ? 'Sí' : 'No',
                       ),
                     ]),
+
+                    const SizedBox(height: 20),
+
+                    // Section: Historial de Lecturas
+                    _buildSectionTitle(
+                      theme,
+                      cs,
+                      'Historial de Lecturas del Medidor',
+                      Icons.history_rounded,
+                    ),
+                    ReadingsHistoryTable(
+                      readings: connection.lastReadings,
+                      limit: 2,
+                    ),
 
                     const SizedBox(height: 20),
 
@@ -361,7 +366,11 @@ class ConnectionDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailCard(ThemeData theme, ColorScheme cs, List<Widget> children) {
+  Widget _buildDetailCard(
+    ThemeData theme,
+    ColorScheme cs,
+    List<Widget> children,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardColor,
@@ -478,7 +487,13 @@ class ConnectionDetailsSheet extends StatelessWidget {
       }
 
       return _buildDetailCard(theme, cs, [
-        _buildDetailItem(theme, cs, Icons.person_rounded, 'Nombre Completo', fullName),
+        _buildDetailItem(
+          theme,
+          cs,
+          Icons.person_rounded,
+          'Nombre Completo',
+          fullName,
+        ),
         _buildDetailItem(
           theme,
           cs,
@@ -493,7 +508,13 @@ class ConnectionDetailsSheet extends StatelessWidget {
           'Teléfono(s)',
           phonesText,
         ),
-        _buildDetailItem(theme, cs, Icons.mail_outline_rounded, 'Correo(s)', emailsText),
+        _buildDetailItem(
+          theme,
+          cs,
+          Icons.mail_outline_rounded,
+          'Correo(s)',
+          emailsText,
+        ),
         _buildDetailItem(
           theme,
           cs,
@@ -526,7 +547,13 @@ class ConnectionDetailsSheet extends StatelessWidget {
       }
 
       return _buildDetailCard(theme, cs, [
-        _buildDetailItem(theme, cs, Icons.business_rounded, 'Razón Social', companyName),
+        _buildDetailItem(
+          theme,
+          cs,
+          Icons.business_rounded,
+          'Razón Social',
+          companyName,
+        ),
         _buildDetailItem(theme, cs, Icons.badge_rounded, 'RUC', c.ruc),
         _buildDetailItem(
           theme,
@@ -535,7 +562,13 @@ class ConnectionDetailsSheet extends StatelessWidget {
           'Teléfono(s)',
           phonesText,
         ),
-        _buildDetailItem(theme, cs, Icons.mail_outline_rounded, 'Correo(s)', emailsText),
+        _buildDetailItem(
+          theme,
+          cs,
+          Icons.mail_outline_rounded,
+          'Correo(s)',
+          emailsText,
+        ),
         _buildDetailItem(
           theme,
           cs,

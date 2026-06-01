@@ -94,6 +94,56 @@ class Email {
   Map<String, dynamic> toJson() => _$EmailToJson(this);
 }
 
+/*
+export interface LastReadingResponse {
+  cadastral_key: string;
+  reading_date: string | Date;
+  reading_time: string;
+  reading_month: string;
+  reading_value_current: number | null;
+  reading_value_preview: number | null;
+  novelty: string | null;
+}
+*/
+
+@JsonSerializable(explicitToJson: true)
+class LastReading {
+  @JsonKey(name: 'cadastralKey')
+  final String cadastralKey;
+
+  @JsonKey(name: 'readingDate')
+  final String? readingDate;
+
+  @JsonKey(name: 'readingTime')
+  final String? readingTime;
+
+  @JsonKey(name: 'readingMonth')
+  final String? readingMonth;
+
+  @JsonKey(name: 'readingValueCurrent')
+  final double? readingValueCurrent;
+
+  @JsonKey(name: 'readingValuePreview')
+  final double? readingValuePreview;
+
+  @JsonKey(name: 'novelty')
+  final String? novelty;
+
+  LastReading({
+    required this.cadastralKey,
+    required this.readingDate,
+    required this.readingTime,
+    required this.readingMonth,
+    required this.readingValueCurrent,
+    required this.readingValuePreview,
+    required this.novelty,
+  });
+
+  factory LastReading.fromJson(Map<String, dynamic> json) =>
+      _$LastReadingFromJson(json);
+  Map<String, dynamic> toJson() => _$LastReadingToJson(this);
+}
+
 @JsonSerializable(explicitToJson: true)
 class Person {
   @JsonKey(name: 'personId', fromJson: _toStringNonNull)
@@ -358,6 +408,9 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'properties')
   final List<Property>? properties;
 
+  @JsonKey(name: 'lastReadings')
+  final List<LastReading>? lastReading;
+
   ConnectionWithPropertiesResponse({
     required this.connectionId,
     required this.clientId,
@@ -390,6 +443,7 @@ class ConnectionWithPropertiesResponse {
     this.person,
     this.company,
     this.properties,
+    this.lastReading,
   });
 
   factory ConnectionWithPropertiesResponse.fromJson(

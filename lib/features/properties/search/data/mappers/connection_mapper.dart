@@ -4,6 +4,7 @@ import 'package:app_properties/features/properties/search/data/model/schemas/dto
     as dto;
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
 import 'package:app_properties/features/properties/search/domain/entities/contact.dart';
+import 'package:app_properties/features/properties/search/domain/entities/last_reading.dart';
 import 'package:app_properties/features/properties/search/domain/entities/person.dart';
 import 'package:app_properties/features/properties/search/domain/entities/company.dart';
 import 'package:app_properties/features/properties/search/domain/entities/property.dart';
@@ -44,6 +45,7 @@ extension ConnectionMapper on dto.ConnectionResponse {
       person: person?.toEntity(),
       company: company?.toEntity(),
       property: property?.toEntity(),
+      lastReadings: lastReadings?.map((r) => r.toEntity()).toList(),
     );
   }
 }
@@ -57,6 +59,20 @@ extension PhoneDtoMapper2 on dto.Phone {
 extension EmailDtoMapper2 on dto.Email {
   EmailEntity toEntity() {
     return EmailEntity(correoid ?? 0, email ?? '');
+  }
+}
+
+extension LastReadingDtoMapper on dto.LastReading {
+  LastReadingEntity toEntity() {
+    return LastReadingEntity(
+      cadastralKey: cadastralKey ?? '',
+      readingDate: readingDate,
+      readingTime: readingTime,
+      readingMonth: readingMonth,
+      readingValueCurrent: readingValueCurrent,
+      readingValuePreview: readingValuePreview,
+      novelty: novelty,
+    );
   }
 }
 

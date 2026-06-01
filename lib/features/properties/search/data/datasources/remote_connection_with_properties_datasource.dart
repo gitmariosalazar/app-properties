@@ -37,9 +37,6 @@ class RemoteConnectionWithPropertiesDataSourceImpl
       },
     );
 
-    debugPrint('Response status: ${response.statusCode}');
-    debugPrint('Response body: ${response.body}');
-
     if (token == null) {
       throw Exception('Token no encontrado');
     }

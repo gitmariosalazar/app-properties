@@ -1,4 +1,5 @@
 import 'package:app_properties/features/properties/search/domain/entities/company.dart';
+import 'package:app_properties/features/properties/search/domain/entities/last_reading.dart';
 import 'package:app_properties/features/properties/search/domain/entities/person.dart';
 import 'package:app_properties/features/properties/search/domain/entities/property.dart';
 import 'package:equatable/equatable.dart';
@@ -37,6 +38,7 @@ class ConnectionEntity extends Equatable {
   final PersonEntity? person;
   final CompanyEntity? company;
   final PropertyEntity? property;
+  final List<LastReadingEntity>? lastReadings;
 
   const ConnectionEntity({
     required this.connectionId,
@@ -72,6 +74,7 @@ class ConnectionEntity extends Equatable {
     this.person,
     this.company,
     this.property,
+    this.lastReadings,
   });
 
   @override
@@ -110,6 +113,7 @@ class ConnectionEntity extends Equatable {
     person,
     company,
     property,
+    lastReadings,
   ];
 }
 
@@ -147,6 +151,7 @@ class ConnectionWithPropertiesEntity extends Equatable {
   final PersonEntity? person;
   final CompanyEntity? company;
   final List<PropertyEntity>? properties;
+  final List<LastReadingEntity>? lastReading;
 
   const ConnectionWithPropertiesEntity({
     required this.connectionId,
@@ -182,6 +187,7 @@ class ConnectionWithPropertiesEntity extends Equatable {
     this.person,
     this.company,
     this.properties,
+    this.lastReading,
   });
 
   @override
@@ -220,5 +226,6 @@ class ConnectionWithPropertiesEntity extends Equatable {
     person,
     company,
     properties,
+    lastReading,
   ];
 }

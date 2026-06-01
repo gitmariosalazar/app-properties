@@ -1,5 +1,6 @@
 // lib/features/properties/data/mappers/connection_mapper.dart
 
+import 'package:app_properties/features/properties/search/data/mappers/last_reading_mapper.dart';
 import 'package:app_properties/features/properties/search/data/model/schemas/dto/response/connection_with_properties_response.dart'
     as dto;
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
@@ -42,6 +43,7 @@ extension ConnectionWithPropertiesMapper
       person: person?.toEntity(),
       company: company?.toEntity(),
       properties: properties?.map((e) => e.toEntity()).toList(),
+      lastReading: lastReading?.map((e) => e.toEntity()).toList(),
     );
   }
 }

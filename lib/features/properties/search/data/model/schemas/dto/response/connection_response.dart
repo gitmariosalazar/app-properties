@@ -264,6 +264,44 @@ class Property {
 }
 
 @JsonSerializable(explicitToJson: true)
+class LastReading {
+  @JsonKey(name: 'cadastralKey')
+  final String? cadastralKey;
+
+  @JsonKey(name: 'readingDate', fromJson: _toDateTimeOrNull)
+  final DateTime? readingDate;
+
+  @JsonKey(name: 'readingTime')
+  final String? readingTime;
+
+  @JsonKey(name: 'readingMonth')
+  final String? readingMonth;
+
+  @JsonKey(name: 'readingValueCurrent', fromJson: _toDoubleOrNull)
+  final double? readingValueCurrent;
+
+  @JsonKey(name: 'readingValuePreview', fromJson: _toDoubleOrNull)
+  final double? readingValuePreview;
+
+  @JsonKey(name: 'novelty')
+  final String? novelty;
+
+  LastReading({
+    this.cadastralKey,
+    this.readingDate,
+    this.readingTime,
+    this.readingMonth,
+    this.readingValueCurrent,
+    this.readingValuePreview,
+    this.novelty,
+  });
+
+  factory LastReading.fromJson(Map<String, dynamic> json) =>
+      _$LastReadingFromJson(json);
+  Map<String, dynamic> toJson() => _$LastReadingToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true)
 class ConnectionResponse {
   @JsonKey(name: 'connectionId', fromJson: _toStringNonNull)
   final String connectionId;
@@ -364,6 +402,9 @@ class ConnectionResponse {
   @JsonKey(name: 'property')
   final Property? property;
 
+  @JsonKey(name: 'lastReadings')
+  final List<LastReading>? lastReadings;
+
   ConnectionResponse({
     required this.connectionId,
     required this.clientId,
@@ -398,6 +439,7 @@ class ConnectionResponse {
     this.person,
     this.company,
     this.property,
+    this.lastReadings,
   });
 
   factory ConnectionResponse.fromJson(Map<String, dynamic> json) =>

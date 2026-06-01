@@ -70,7 +70,7 @@ class ActaTemplate implements PdfTemplate {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.letter,
-        margin: const pw.EdgeInsets.all(40),
+        margin: const pw.EdgeInsets.all(28),
         build: (pw.Context context) {
           return [
             // --- HEADER ---
@@ -83,9 +83,9 @@ class ActaTemplate implements PdfTemplate {
                   children: [
                     if (logoImage != null)
                       pw.Container(
-                        width: 45,
-                        height: 45,
-                        margin: const pw.EdgeInsets.only(right: 12),
+                        width: 36,
+                        height: 36,
+                        margin: const pw.EdgeInsets.only(right: 8),
                         child: pw.Image(logoImage),
                       ),
                     pw.Column(
@@ -94,23 +94,23 @@ class ActaTemplate implements PdfTemplate {
                         pw.Text(
                           'EMPRESA PÚBLICA DE AGUA POTABLE Y ALCANTARILLADO \nDE ANTONIO ANTE',
                           style: pw.TextStyle(
-                            fontSize: 9,
+                            fontSize: 7.5,
                             fontWeight: pw.FontWeight.bold,
                             color: PdfColors.blueGrey900,
                           ),
                         ),
-                        pw.SizedBox(height: 2),
+                        pw.SizedBox(height: 1),
                         pw.Text(
                           'EPAA - REGISTRO TÉCNICO',
                           style: pw.TextStyle(
-                            fontSize: 7.5,
+                            fontSize: 6,
                             color: PdfColors.blueGrey600,
                           ),
                         ),
                         pw.Text(
                           'Atuntaqui, Ecuador',
                           style: pw.TextStyle(
-                            fontSize: 7.5,
+                            fontSize: 6,
                             color: PdfColors.blueGrey600,
                           ),
                         ),
@@ -123,27 +123,27 @@ class ActaTemplate implements PdfTemplate {
                   children: [
                     pw.Container(
                       padding: const pw.EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 6,
+                        vertical: 2,
                       ),
                       decoration: pw.BoxDecoration(
                         color: PdfColors.grey200,
-                        borderRadius: pw.BorderRadius.circular(6),
+                        borderRadius: pw.BorderRadius.circular(4),
                       ),
                       child: pw.Text(
                         'ACTA DE ENTREGA - RECEPCIÓN',
                         style: pw.TextStyle(
-                          fontSize: 10,
+                          fontSize: 8,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.blue900,
                         ),
                       ),
                     ),
-                    pw.SizedBox(height: 4),
+                    pw.SizedBox(height: 2),
                     pw.Text(
                       'Nº: ${connection.connectionId}',
                       style: pw.TextStyle(
-                        fontSize: 11,
+                        fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
                         color: PdfColors.red900,
                       ),
@@ -152,23 +152,23 @@ class ActaTemplate implements PdfTemplate {
                 ),
               ],
             ),
-            pw.SizedBox(height: 15),
-            pw.Divider(thickness: 1, color: PdfColors.blueGrey200),
-            pw.SizedBox(height: 15),
+            pw.SizedBox(height: 8),
+            pw.Divider(thickness: 0.8, color: PdfColors.blueGrey200),
+            pw.SizedBox(height: 8),
 
             // --- INTRO / TÍTULO ---
             pw.Center(
               child: pw.Text(
                 'CERTIFICADO DE INSTALACIÓN Y REGISTRO DE ACOMETIDA',
                 style: pw.TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: pw.FontWeight.bold,
                   color: PdfColors.blueGrey800,
                 ),
                 textAlign: pw.TextAlign.center,
               ),
             ),
-            pw.SizedBox(height: 20),
+            pw.SizedBox(height: 10),
 
             // --- SECCIÓN 1: DATOS DEL PROPIETARIO ---
             _buildSectionHeader('1. DATOS DEL PROPIETARIO'),
@@ -186,11 +186,15 @@ class ActaTemplate implements PdfTemplate {
             _buildGridRow([
               _buildGridCell('Dirección Domicilio', ownerAddress),
             ]),
-            pw.SizedBox(height: 15),
+            pw.SizedBox(height: 8),
 
             // --- SECCIÓN 2: ESPECIFICACIONES TÉCNICAS ---
             _buildSectionHeader('2. ESPECIFICACIONES TÉCNICAS DE LA ACOMETIDA'),
             _buildGridRow([
+              _buildGridCell(
+                'Número de Contrato',
+                connection.connectionContractNumber ?? 'Sin Contrato',
+              ),
               _buildGridCell(
                 'Clave Catastral',
                 connection.connectionCadastralKey,
@@ -208,12 +212,6 @@ class ActaTemplate implements PdfTemplate {
               ),
             ]),
             _buildGridRow([
-              _buildGridCell(
-                'Número de Contrato',
-                connection.connectionContractNumber ?? 'Sin Contrato',
-              ),
-            ]),
-            _buildGridRow([
               _buildGridCell('Fecha de Instalación', installationDateFormatted),
               _buildGridCell(
                 'Alcantarillado',
@@ -221,8 +219,6 @@ class ActaTemplate implements PdfTemplate {
                     ? 'SÍ REGISTRA'
                     : 'NO REGISTRA',
               ),
-            ]),
-            _buildGridRow([
               _buildGridCell(
                 'Lectura Habilitada',
                 connection.connectionIsReadable == true
@@ -236,7 +232,7 @@ class ActaTemplate implements PdfTemplate {
                     : 'SUSPENDIDA / INACTIVA',
               ),
             ]),
-            pw.SizedBox(height: 15),
+            pw.SizedBox(height: 8),
 
             // --- SECCIÓN 3: UBICACIÓN GEOGRÁFICA Y PREDIO ---
             _buildSectionHeader('3. UBICACIÓN GEOGRÁFICA Y PREDIO'),
@@ -288,7 +284,54 @@ class ActaTemplate implements PdfTemplate {
                     : 'No registrada',
               ),
             ]),
-            pw.SizedBox(height: 35),
+            pw.SizedBox(height: 8),
+
+            // --- SECCIÓN 4: ÚLTIMA LECTURA DEL MEDIDOR ---
+            _buildSectionHeader('4. ÚLTIMA LECTURA DEL MEDIDOR'),
+            if (connection.lastReadings == null ||
+                connection.lastReadings!.isEmpty)
+              _buildGridRow([
+                _buildGridCell('Lectura', 'Sin lecturas registradas'),
+              ])
+            else ...[
+              () {
+                final r = connection.lastReadings!.first;
+                final fecha = r.readingDate != null
+                    ? '${r.readingDate!.day.toString().padLeft(2, '0')}/'
+                          '${r.readingDate!.month.toString().padLeft(2, '0')}/'
+                          '${r.readingDate!.year}'
+                    : 'Sin fecha';
+                final consumo =
+                    (r.readingValueCurrent ?? 0) - (r.readingValuePreview ?? 0);
+                return pw.Column(
+                  children: [
+                    _buildGridRow([
+                      _buildGridCell('Fecha', fecha),
+                      _buildGridCell(
+                        'Mes',
+                        r.readingMonth ?? 'Sin mes asignado',
+                      ),
+                      _buildGridCell(
+                        'Lectura Actual (m³)',
+                        '${r.readingValueCurrent?.toStringAsFixed(0) ?? "0"} m³',
+                      ),
+                      _buildGridCell(
+                        'Lectura Anterior (m³)',
+                        '${r.readingValuePreview?.toStringAsFixed(0) ?? "0"} m³',
+                      ),
+                      _buildGridCell(
+                        'Consumo (m³)',
+                        '${consumo >= 0 ? "+" : ""}${consumo.toStringAsFixed(0)} m³',
+                      ),
+                    ]),
+                    _buildGridRow([
+                      _buildGridCell('Novedad', r.novelty ?? 'NORMAL'),
+                    ]),
+                  ],
+                );
+              }(),
+            ],
+            pw.SizedBox(height: 20),
 
             // --- PIE DE PÁGINA / FIRMAS ---
             pw.Spacer(),
@@ -382,18 +425,18 @@ class ActaTemplate implements PdfTemplate {
   pw.Widget _buildSectionHeader(String title) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3),
       decoration: const pw.BoxDecoration(
         color: PdfColors.blueGrey800,
         borderRadius: pw.BorderRadius.only(
-          topLeft: pw.Radius.circular(4),
-          topRight: pw.Radius.circular(4),
+          topLeft: pw.Radius.circular(3),
+          topRight: pw.Radius.circular(3),
         ),
       ),
       child: pw.Text(
         title,
         style: pw.TextStyle(
-          fontSize: 9,
+          fontSize: 7.5,
           fontWeight: pw.FontWeight.bold,
           color: PdfColors.white,
         ),
@@ -407,7 +450,7 @@ class ActaTemplate implements PdfTemplate {
       children: List.generate(cells.length, (index) {
         return pw.Expanded(
           child: pw.Container(
-            padding: const pw.EdgeInsets.all(6),
+            padding: const pw.EdgeInsets.all(4),
             decoration: pw.BoxDecoration(
               border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
             ),
@@ -425,16 +468,16 @@ class ActaTemplate implements PdfTemplate {
         pw.Text(
           label.toUpperCase(),
           style: pw.TextStyle(
-            fontSize: 6,
+            fontSize: 5,
             color: PdfColors.grey600,
             fontWeight: pw.FontWeight.bold,
           ),
         ),
-        pw.SizedBox(height: 2),
+        pw.SizedBox(height: 1),
         pw.Text(
           value,
           style: pw.TextStyle(
-            fontSize: isTitle ? 9 : 8,
+            fontSize: isTitle ? 8 : 7,
             fontWeight: isTitle ? pw.FontWeight.bold : pw.FontWeight.normal,
             color: PdfColors.grey900,
           ),

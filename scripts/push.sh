@@ -37,7 +37,7 @@ sed -i "s/^version: .*/version: $NEW_VERSION/" "$PUBSPEC"
 # ── 3. Commit del bump ─────────────────────────────────────────
 cd "$REPO_ROOT" || exit 1
 git add pubspec.yaml
-git commit -m "chore: bump version $CURRENT → $NEW_VERSION [skip ci]"
+git commit -m "chore: bump version $CURRENT → $NEW_VERSION"
 
 echo "✅ Versión $NEW_VERSION commiteada"
 echo ""

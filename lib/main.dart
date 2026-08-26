@@ -8,14 +8,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_properties/core/di/injection.dart' as di;
 import 'package:app_properties/core/router/app_router.dart';
 import 'package:app_properties/config/environments/environment.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter/services.dart';
 
 // 1. RouteObserver global
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 
-// 2. Determina el flavor desde --dart-define
-const String _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+// 2. Determina el flavor desde --flavor o --dart-define
+final String flavor = appFlavor ?? const String.fromEnvironment('FLAVOR', defaultValue: 'develop');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,12 +25,14 @@ void main() async {
   // 3. Inicializar locale para fechas en español
   await initializeDateFormatting('es_ES', null);
 
-  // 4. Carga el entorno correcto (API_URL desde .env)
-  final envType = _flavor == 'dev' ? EnvironmentType.dev : EnvironmentType.prod;
+  // 4. Carga el entorno correcto (API_URL desde .env.production o .env.dev)
+  final envType = flavor == 'develop'
+      ? EnvironmentType.dev
+      : EnvironmentType.prod;
   await Environment.init(env: envType);
 
   // 5. Solo en dev: imprime config
-  if (_flavor == 'dev') {
+  if (flavor == 'develop') {
     Environment.printConfig();
   }
 
@@ -39,7 +43,12 @@ void main() async {
   await di.sl<ThemeCubit>().init();
 
   // 8. Ejecuta la app
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      // ← Agrega esto
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -57,13 +66,15 @@ class MyApp extends StatelessWidget {
         listener: (context, state) {
           if (state is LoginInitial) {
             AppRouter.router.go('/login');
+          } else if (state is LoginSuccess) {
+            AppRouter.router.go('/home');
           }
         },
         child: BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, themeMode) {
             return MaterialApp.router(
               title: 'Predios EPAA-AA',
-              debugShowCheckedModeBanner: _flavor == 'dev',
+              debugShowCheckedModeBanner: flavor == 'develop',
               theme: AppTheme.light,
               darkTheme: AppTheme.dark,
               themeMode: themeMode,

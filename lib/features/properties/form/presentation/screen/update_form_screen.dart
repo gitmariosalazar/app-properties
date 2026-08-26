@@ -1529,19 +1529,21 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
   ) => Expanded(
     child: Container(
       margin: EdgeInsets.symmetric(horizontal: context.smallSpacing * 0.5),
-      decoration: BoxDecoration(
+      child: Material(
         color: value
             ? cs.primaryContainer.withValues(alpha: 0.35)
             : cs.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
-        border: Border.all(
-          color: value
-              ? cs.primary.withValues(alpha: 0.4)
-              : cs.outlineVariant.withValues(alpha: 0.6),
-          width: 0.8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
+          side: BorderSide(
+            color: value
+                ? cs.primary.withValues(alpha: 0.4)
+                : cs.outlineVariant.withValues(alpha: 0.6),
+            width: 0.8,
+          ),
         ),
-      ),
-      child: SwitchListTile(
+        clipBehavior: Clip.antiAlias,
+        child: SwitchListTile(
         title: Text(
           title,
           style: context.bodyMedium.copyWith(
@@ -1562,7 +1564,9 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(context.smallBorderRadiusValue),
         ),
+        ),
       ),
     ),
   );
 }
+

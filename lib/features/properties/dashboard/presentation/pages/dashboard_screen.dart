@@ -1,3 +1,4 @@
+import 'package:app_properties/components/loaders/professional_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -91,9 +92,9 @@ class _DashboardViewState extends State<_DashboardView> {
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Center(
-                          child: CircularProgressIndicator(
-                            color: cs.primary,
-                            strokeWidth: 3,
+                          child: ProfessionalLoader(
+                            label: 'Cargando información',
+                            description: 'Por favor espere...',
                           ),
                         ),
                       )

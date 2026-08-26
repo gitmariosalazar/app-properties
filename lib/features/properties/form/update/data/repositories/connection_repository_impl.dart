@@ -3,6 +3,7 @@ import 'package:app_properties/core/network/offline_sync_manager.dart';
 import 'package:app_properties/features/properties/form/update/data/datasources/connection_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/update/data/mappers/connection_mapper.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart';
+import 'package:app_properties/features/properties/form/update/data/models/dto/request/change_meter_request.dart';
 
 class ConnectionRepositoryImpl implements ConnectionRepository {
   final ConnectionRemoteDataSource remoteDataSource;
@@ -43,6 +44,15 @@ class ConnectionRepositoryImpl implements ConnectionRepository {
         entityId: connectionId,
         payload: request.toJson(),
       );
+    }
+  }
+
+  @override
+  Future<void> changeMeter(ChangeMeterRequest request) async {
+    if (await networkInfo.isConnected) {
+      await remoteDataSource.changeMeter(request: request);
+    } else {
+      throw Exception('No hay conexión a internet para subir las fotos y cambiar el medidor.');
     }
   }
 }

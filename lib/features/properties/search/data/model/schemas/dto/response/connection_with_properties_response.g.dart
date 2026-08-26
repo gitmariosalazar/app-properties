@@ -27,7 +27,7 @@ Map<String, dynamic> _$EmailToJson(Email instance) => <String, dynamic>{
 };
 
 LastReading _$LastReadingFromJson(Map<String, dynamic> json) => LastReading(
-  cadastralKey: json['cadastralKey'] as String,
+  cadastralKey: _toStringNonNull(json['cadastralKey']),
   readingDate: json['readingDate'] as String?,
   readingTime: json['readingTime'] as String?,
   readingMonth: json['readingMonth'] as String?,
@@ -84,10 +84,10 @@ Map<String, dynamic> _$PersonToJson(Person instance) => <String, dynamic>{
 };
 
 Company _$CompanyFromJson(Map<String, dynamic> json) => Company(
-  ruc: json['ruc'] as String,
+  ruc: _toStringNonNull(json['ruc']),
   address: json['address'] as String?,
   country: json['country'] as String?,
-  clientId: json['clientId'] as String,
+  clientId: _toStringNonNull(json['clientId']),
   parishId: _toStringOrNull(json['parishId']),
   companyId: _toIntOrNull(json['companyId']),
   businessName: json['businessName'] as String?,
@@ -115,16 +115,16 @@ Map<String, dynamic> _$CompanyToJson(Company instance) => <String, dynamic>{
 
 Property _$PropertyFromJson(Map<String, dynamic> json) => Property(
   propertyId: _toStringNonNull(json['propertyId']),
-  propertySector: json['propertySector'] as String,
+  propertySector: _toStringNonNull(json['propertySector']),
   propertyTypeId: _toIntOrNull(json['propertyTypeId']),
-  propertyTypeName: json['propertyTypeName'] as String,
-  propertyAddress: json['propertyAddress'] as String,
-  propertyAlleyway: json['propertyAlleyway'] as String,
+  propertyTypeName: _toStringNonNull(json['propertyTypeName']),
+  propertyAddress: _toStringNonNull(json['propertyAddress']),
+  propertyAlleyway: _toStringNonNull(json['propertyAlleyway']),
   propertyAltitude: _toDoubleOrNull(json['propertyAltitude']),
   propertyPrecision: _toDoubleOrNull(json['propertyPrecision']),
   propertyReference: json['propertyReference'] as String?,
   propertyCoordinates: json['propertyCoordinates'] as String?,
-  propertyCadastralKey: json['propertyCadastralKey'] as String,
+  propertyCadastralKey: _toStringNonNull(json['propertyCadastralKey']),
   propertyGeometricZone: json['propertyGeometricZone'] as String?,
 );
 
@@ -147,19 +147,19 @@ ConnectionWithPropertiesResponse _$ConnectionWithPropertiesResponseFromJson(
   Map<String, dynamic> json,
 ) => ConnectionWithPropertiesResponse(
   connectionId: _toStringNonNull(json['connectionId']),
-  clientId: json['clientId'] as String,
+  clientId: _toStringNonNull(json['clientId']),
   connectionRateId: _toIntOrNull(json['connectionRateId']),
-  connectionRateName: json['connectionRateName'] as String,
+  connectionRateName: _toStringNonNull(json['connectionRateName']),
   connectionMeterNumber: json['connectionMeterNumber'] as String?,
   connectionSector: _toIntOrNull(json['connectionSector']),
   connectionAccount: _toIntOrNull(json['connectionAccount']),
-  connectionCadastralKey: json['connectionCadastralKey'] as String,
+  connectionCadastralKey: _toStringNonNull(json['connectionCadastralKey']),
   connectionContractNumber: _toStringOrNull(json['connectionContractNumber']),
   connectionSewerage: _toBoolOrNull(json['connectionSewerage']),
   connectionStatus: _toBoolOrNull(json['connectionStatus']),
   connectionStateId: _toIntOrNull(json['connectionStateId']),
   connectionIsReadable: _toBoolOrNull(json['connectionIsReadable']),
-  connectionAddress: json['connectionAddress'] as String,
+  connectionAddress: _toStringNonNull(json['connectionAddress']),
   connectionInstallationDate: json['connectionInstallationDate'] as String?,
   connectionPeopleNumber: _toIntOrNull(json['connectionPeopleNumber']),
   connectionZone: _toIntOrNull(json['connectionZone']),

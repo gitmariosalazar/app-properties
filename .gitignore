@@ -24,7 +24,7 @@ migrate_working_dir/
 #.vscode/
 
 # Environment files
-.env
+.env.*
 .env.dev
 .env.prod
 

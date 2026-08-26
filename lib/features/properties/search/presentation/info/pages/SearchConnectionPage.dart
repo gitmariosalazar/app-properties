@@ -1,3 +1,4 @@
+import 'package:app_properties/components/loaders/professional_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -94,32 +95,33 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
 
                 // --- MAIN LIST AREA ---
                 Expanded(
-                  child: BlocBuilder<SearchConnectionCubit, SearchConnectionState>(
-                    builder: (context, state) {
-                      if (state is SearchConnectionInitial) {
-                        return const SearchInitialView();
-                      }
-                      if (state is SearchConnectionLoading) {
-                        return const SearchLoadingView();
-                      }
-                      if (state is SearchConnectionError) {
-                        return SearchErrorView(
-                          message: state.message,
-                          onRetry: _onSearch,
-                        );
-                      }
-                      if (state is SearchConnectionLoaded) {
-                        final list = state.connections;
-                        if (list.isEmpty) {
-                          return SearchEmptyView(
-                            searchTerm: _searchController.text,
-                          );
-                        }
-                        return _buildResultsList(context, list);
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                  child:
+                      BlocBuilder<SearchConnectionCubit, SearchConnectionState>(
+                        builder: (context, state) {
+                          if (state is SearchConnectionInitial) {
+                            return const SearchInitialView();
+                          }
+                          if (state is SearchConnectionLoading) {
+                            return const SearchLoadingView();
+                          }
+                          if (state is SearchConnectionError) {
+                            return SearchErrorView(
+                              message: state.message,
+                              onRetry: _onSearch,
+                            );
+                          }
+                          if (state is SearchConnectionLoaded) {
+                            final list = state.connections;
+                            if (list.isEmpty) {
+                              return SearchEmptyView(
+                                searchTerm: _searchController.text,
+                              );
+                            }
+                            return _buildResultsList(context, list);
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
                 ),
               ],
             ),
@@ -139,13 +141,9 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(color: cs.primary),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Cargando detalles del predio...',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        const ProfessionalLoader(
+                          label: 'Cargando detalle de la acometida...',
+                          description: 'Por favor espere...',
                         ),
                       ],
                     ),
@@ -158,10 +156,7 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
     );
   }
 
-  Widget _buildResultsList(
-    BuildContext context,
-    List<ConnectionEntity> list,
-  ) {
+  Widget _buildResultsList(BuildContext context, List<ConnectionEntity> list) {
     // Apply filters
     debugPrint('active filter: $_activeFilter');
     final filtered = list.where((item) {
@@ -237,4 +232,3 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
     );
   }
 }
-

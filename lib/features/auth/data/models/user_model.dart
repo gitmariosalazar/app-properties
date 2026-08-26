@@ -1,3 +1,4 @@
+import 'package:app_properties/features/auth/domain/entities/RoleOrPermission.dart';
 import 'package:app_properties/features/auth/domain/entities/user.dart';
 
 class UserModel extends User {
@@ -20,14 +21,32 @@ class UserModel extends User {
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       roles:
-          (json['roles'] as List<dynamic>?)
-              ?.map((e) => e is String ? e : (e['name'] as String))
-              .toList() ??
+          (json['roles'] as List<dynamic>?)?.map((e) {
+            if (e is String) {
+              return RoleOrPermission(id: 0, name: e, description: '');
+            } else if (e is int) {
+              return RoleOrPermission(
+                id: e,
+                name: e.toString(),
+                description: '',
+              );
+            }
+            return RoleOrPermission.fromJson(e as Map<String, dynamic>);
+          }).toList() ??
           [],
       permissions:
-          (json['permissions'] as List<dynamic>?)
-              ?.map((e) => e is String ? e : (e['name'] as String))
-              .toList() ??
+          (json['permissions'] as List<dynamic>?)?.map((e) {
+            if (e is String) {
+              return RoleOrPermission(id: 0, name: e, description: '');
+            } else if (e is int) {
+              return RoleOrPermission(
+                id: e,
+                name: e.toString(),
+                description: '',
+              );
+            }
+            return RoleOrPermission.fromJson(e as Map<String, dynamic>);
+          }).toList() ??
           [],
       isActive: json['isActive'] as bool,
     );
@@ -40,8 +59,10 @@ class UserModel extends User {
       'email': email,
       'firstName': firstName,
       'lastName': lastName,
-      'roles': roles.map((roleName) => {'name': roleName}).toList(),
-      'permissions': permissions.map((permName) => {'name': permName}).toList(),
+      'roles': roles.map((role) => role.toJson()).toList(),
+      'permissions': permissions
+          .map((permission) => permission.toJson())
+          .toList(),
       'isActive': isActive,
     };
   }

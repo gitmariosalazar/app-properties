@@ -46,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               user.firstName,
               user.lastName,
               user.email,
-              user.roles,
+              user.roles.map((e) => e.name).toList(),
             ),
 
           // ── General section ───────────────────────────────────────
@@ -63,9 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    isDark
-                        ? Icons.light_mode_rounded
-                        : Icons.dark_mode_rounded,
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
                     size: 20,
                     color: isDark
                         ? const Color(0xFFF59E0B)
@@ -77,9 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
                 subtitle: Text(
-                  isDark
-                      ? 'Interfaz en tono oscuro'
-                      : 'Interfaz en tono claro',
+                  isDark ? 'Interfaz en tono oscuro' : 'Interfaz en tono claro',
                   style: const TextStyle(fontSize: 12),
                 ),
                 value: isDark,
@@ -98,9 +94,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 secondary: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0).withValues(
-                      alpha: isDark ? 0.20 : 0.10,
-                    ),
+                    color: const Color(
+                      0xFF1565C0,
+                    ).withValues(alpha: isDark ? 0.20 : 0.10),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -270,6 +266,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String email,
     List<String> roles,
   ) {
+    final isSuperAdmin = roles.any(
+      (r) => r.toUpperCase() == 'SUPER ADMINISTRADOR',
+    );
+    final dotColor = isSuperAdmin
+        ? const Color(0xFFFFC107)
+        : const Color(0xFF1EB980);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 20, 16, 4),
       padding: const EdgeInsets.all(16),
@@ -333,11 +336,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: dotColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isSuperAdmin ? 'Super Administrador' : 'Administrador',
+                      style: TextStyle(
+                        color: isSuperAdmin
+                            ? const Color(0xFFFFC107)
+                            : Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit_rounded, color: Colors.white70, size: 20),
+            icon: const Icon(
+              Icons.edit_rounded,
+              color: Colors.white70,
+              size: 20,
+            ),
             onPressed: () => context.push('/profile'),
           ),
         ],
@@ -348,7 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showSecurityStatus(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Estado de seguridad'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -374,7 +405,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Aceptar'),
           ),
         ],
@@ -462,9 +493,7 @@ class _SettingsCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.05),
@@ -473,7 +502,15 @@ class _SettingsCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(children: children),
+      child: Material(
+        color: cs.surfaceContainerHighest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: cs.outlineVariant),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(children: children),
+      ),
     );
   }
 }
@@ -524,7 +561,8 @@ class _SettingsTile extends StatelessWidget {
         subtitle,
         style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
       ),
-      trailing: trailing ??
+      trailing:
+          trailing ??
           Icon(
             Icons.chevron_right_rounded,
             color: cs.onSurfaceVariant,
@@ -551,9 +589,7 @@ class _SecurityItem extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 18),
         const SizedBox(width: 10),
-        Expanded(
-          child: Text(label, style: const TextStyle(fontSize: 13)),
-        ),
+        Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
       ],
     );
   }

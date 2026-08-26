@@ -2,6 +2,9 @@
 //
 // Clean Architecture: Presentation layer only — reads state from LoginCubit.
 // SOLID: Each private widget has a single responsibility.
+import 'package:app_properties/core/di/injection.dart' as di;
+import 'package:app_properties/features/profile/presentation/components/ChangePasswordModal.dart';
+import 'package:app_properties/features/profile/presentation/cubit/change_password_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +52,7 @@ class _ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return CustomScrollView(
       slivers: [
         // ── Hero SliverAppBar (banner + avatar + name) ─────────
@@ -60,7 +64,32 @@ class _ProfileBody extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               _ProfileStatsRow(user: user),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
+              // Boton change password
+              ElevatedButton.icon(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => BlocProvider(
+                      create: (_) => di.sl<ChangePasswordCubit>(),
+                      child: ChangePasswordModal(userId: user.id),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.password_outlined, color: cs.primary),
+                label: Text(
+                  'Cambiar Contraseña',
+                  style: TextStyle(color: cs.primary),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cs.outline,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+              const SizedBox(height: 10),
               _SectionHeader(
                 icon: Icons.person_outline_rounded,
                 title: 'Información Personal',
@@ -89,7 +118,7 @@ class _ProfileBody extends StatelessWidget {
                 title: 'Roles y Permisos',
               ),
               const SizedBox(height: 12),
-              _RolesCard(roles: user.roles),
+              _RolesCard(roles: user.roles.map((e) => e.name).toList()),
               const SizedBox(height: 24),
               _SectionHeader(
                 icon: Icons.business_rounded,
@@ -121,7 +150,12 @@ class _ProfileHeroSliver extends StatelessWidget {
     final isTablet = context.isTablet;
     final avatarR = isTablet ? 48.0 : 40.0;
     final bannerH = isTablet ? 220.0 : 195.0;
-
+    final isSuperAdmin = user.roles.any(
+      (r) => r.name.toUpperCase() == 'SUPER ADMINISTRADOR',
+    );
+    final dotColor = user.isActive
+        ? (isSuperAdmin ? const Color(0xFFFFC107) : const Color(0xFF1EB980))
+        : Colors.grey;
     return SliverAppBar(
       expandedHeight: bannerH,
       pinned: true,
@@ -179,7 +213,7 @@ class _ProfileHeroSliver extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'EPAA-AA · Predios',
+                          'EPAA-AA · Predios - Catastros',
                           style: TextStyle(
                             color: cs.onPrimary,
                             fontSize: 11,
@@ -201,19 +235,41 @@ class _ProfileHeroSliver extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: cs.onPrimary.withValues(alpha: 0.2),
                         ),
-                        child: CircleAvatar(
-                          radius: avatarR,
-                          backgroundColor: cs.onPrimary,
-                          child: Text(
-                            user.firstName.isNotEmpty
-                                ? user.firstName[0].toUpperCase()
-                                : 'U',
-                            style: TextStyle(
-                              fontSize: avatarR * 0.85,
-                              fontWeight: FontWeight.w900,
-                              color: cs.primary,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: avatarR,
+                              backgroundColor: cs.onPrimary,
+                              child: Text(
+                                user.firstName.isNotEmpty
+                                    ? user.firstName[0].toUpperCase() +
+                                          user.lastName[0].toUpperCase()
+                                    : 'U',
+                                style: TextStyle(
+                                  fontSize: avatarR * 0.85,
+                                  fontWeight: FontWeight.w900,
+                                  color: cs.primary,
+                                ),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              bottom: 0,
+                              right: 2,
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: dotColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: cs
+                                        .primary, // Simula el recorte haciendo match con el fondo
+                                    width: 3.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -326,17 +382,17 @@ class _ProfileStatsRow extends StatelessWidget {
             color: cs.primary,
           ),
           _StatDivider(),
-          const _StatItem(
-            icon: Icons.map_rounded,
-            value: '—',
-            label: 'Predios',
-            color: Color(0xFF1EB980),
+          _StatItem(
+            icon: Icons.security_rounded,
+            value: user.permissions.length.toString(),
+            label: 'Permisos',
+            color: const Color(0xFF1EB980),
           ),
           _StatDivider(),
           _StatItem(
             icon: Icons.verified_rounded,
             value: user.isActive ? 'Sí' : 'No',
-            label: 'Activo',
+            label: 'Verificado',
             color: const Color(0xFFFF9800),
           ),
         ],
@@ -499,11 +555,7 @@ class _InfoTile extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: cs.outlineVariant,
-            size: 20,
-          ),
+          Icon(Icons.chevron_right_rounded, color: cs.outlineVariant, size: 20),
         ],
       ),
     );
@@ -619,10 +671,7 @@ class _OrgCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Empresa Pública de Agua y Alcantarillado',
-                  style: TextStyle(
-                    color: cs.onSurfaceVariant,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11),
                 ),
                 const SizedBox(height: 4),
                 Row(

@@ -1,15 +1,15 @@
 import 'package:app_properties/features/auth/data/models/user_model.dart';
+import 'package:app_properties/features/auth/domain/entities/auth_response.dart';
 
-class AuthResponseModel {
-  final String accessToken;
-  final String refreshToken;
-  final UserModel user;
+class AuthResponseModel extends AuthResponse {
+  const AuthResponseModel({
+    required super.accessToken,
+    required super.refreshToken,
+    required UserModel user,
+  }) : super(user: user);
 
-  AuthResponseModel({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.user,
-  });
+  @override
+  UserModel get user => super.user as UserModel;
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(

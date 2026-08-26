@@ -2,15 +2,16 @@
 import 'dart:convert';
 
 import 'package:app_properties/core/error/exception.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app_properties/features/auth/data/models/auth_response_model.dart';
 import 'package:app_properties/features/auth/data/models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class AuthLocalDataSource {
   Future<void> cacheToken(String token);
   Future<String?> getToken();
   Future<void> clearToken();
   Future<void> cacheUser(UserModel user);
-  Future<UserModel?> getUser();
+  Future<AuthResponseModel?> getAuthResponse();
   Future<void> clearUser();
 }
 
@@ -23,8 +24,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   AuthLocalDataSourceImpl({required this.sharedPreferences});
 
   @override
-  Future<void> cacheToken(String token) {
-    return sharedPreferences.setString(CACHED_AUTH_TOKEN, token);
+  Future<void> cacheToken(String token) async {
+    await sharedPreferences.setString(CACHED_AUTH_TOKEN, token);
+    print(
+      '💾 TOKEN GUARDADO CORRECTAMENTE: ${token.substring(0, 30)}...',
+    ); // ← Agrega esto
   }
 
   @override
@@ -46,11 +50,18 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
-  Future<UserModel?> getUser() async {
+  Future<AuthResponseModel?> getAuthResponse() async {
+    final token = sharedPreferences.getString(CACHED_AUTH_TOKEN);
     final jsonString = sharedPreferences.getString(CACHED_USER_DATA);
-    if (jsonString != null) {
+
+    if (jsonString != null && token != null) {
       try {
-        return UserModel.fromJson(jsonDecode(jsonString));
+        final userModel = UserModel.fromJson(jsonDecode(jsonString));
+        return AuthResponseModel(
+          accessToken: token,
+          refreshToken: '',
+          user: userModel,
+        );
       } catch (e) {
         throw CacheException('Could not parse cached user data');
       }

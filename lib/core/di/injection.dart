@@ -1,3 +1,8 @@
+import 'package:app_properties/config/environments/environment.dart';
+import 'package:app_properties/core/services/websocket_service.dart';
+import 'package:app_properties/features/auth/domain/usecases/refresh_token_usecase.dart';
+import 'package:app_properties/features/incidents/domain/usecases/get_incident_dashboard_kpis.dart';
+import 'package:app_properties/features/public/presentation/cubit/public_incident_kpis_cubit.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:app_properties/core/network/network_info.dart';
@@ -12,19 +17,22 @@ import 'package:app_properties/features/properties/form/update/data/datasources/
 import 'package:app_properties/features/properties/form/update/data/datasources/property_remote_data_source.dart';
 
 import 'package:app_properties/features/properties/form/update/domain/repositories/company_repository.dart';
-import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart' as update_domain_repo;
+import 'package:app_properties/features/properties/form/update/domain/repositories/connection_repository.dart'
+    as update_domain_repo;
 import 'package:app_properties/features/properties/form/update/domain/repositories/customer_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/observation_connection_repository.dart';
 import 'package:app_properties/features/properties/form/update/domain/repositories/property_repository.dart';
 
 import 'package:app_properties/features/properties/form/update/data/repositories/company_repository_impl.dart';
-import 'package:app_properties/features/properties/form/update/data/repositories/connection_repository_impl.dart' as update_data_repo;
+import 'package:app_properties/features/properties/form/update/data/repositories/connection_repository_impl.dart'
+    as update_data_repo;
 import 'package:app_properties/features/properties/form/update/data/repositories/customer_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/observation_connection_repository_impl.dart';
 import 'package:app_properties/features/properties/form/update/data/repositories/property_repository_impl.dart';
 
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_company.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_connection.dart';
+import 'package:app_properties/features/properties/form/update/domain/usecases/change_meter_usecase.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_customer.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/update_property.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/add_observation_connection.dart';
@@ -34,6 +42,8 @@ import 'package:app_properties/features/auth/domain/usecases/check_auth_status_u
 import 'package:app_properties/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:app_properties/features/auth/domain/usecases/verify_user_usecase.dart';
 import 'package:app_properties/features/auth/presentation/cubit/login_cubit.dart';
+import 'package:app_properties/features/auth/domain/usecases/change_password_usecase.dart';
+import 'package:app_properties/features/profile/presentation/cubit/change_password_cubit.dart';
 import 'package:app_properties/features/properties/form/add-img/data/datasources/property_image_remote_data_source.dart';
 import 'package:app_properties/features/properties/form/add-img/data/repositories/property_image_repository_impl.dart';
 import 'package:app_properties/features/properties/form/add-img/domain/repositories/property_image_repository.dart';
@@ -79,6 +89,8 @@ import 'package:app_properties/features/properties/search/presentation/manually/
 import 'package:app_properties/features/properties/search/presentation/info/cubit/search_connection_cubit.dart';
 import 'package:app_properties/features/properties/search/domain/services/document_export_service.dart';
 import 'package:app_properties/features/properties/search/data/services/pdf_document_export_service_impl.dart';
+import 'package:app_properties/features/properties/search/domain/services/map_navigation_service.dart';
+import 'package:app_properties/features/properties/search/data/services/map_navigation_service_impl.dart';
 
 // === DASHBOARD ===
 import 'package:app_properties/features/properties/dashboard/data/datasources/dashboard_remote_datasource.dart';
@@ -88,7 +100,29 @@ import 'package:app_properties/features/properties/dashboard/domain/usecases/get
 import 'package:app_properties/features/properties/dashboard/domain/usecases/watch_dashboard_stats.dart';
 import 'package:app_properties/features/properties/dashboard/presentation/cubit/dashboard_cubit.dart';
 
+// === Incidents ===
+import 'package:app_properties/features/incidents/data/datasources/incident_remote_datasource.dart';
+import 'package:app_properties/features/incidents/data/repositories/incident_repository_impl.dart';
+import 'package:app_properties/features/incidents/domain/repositories/incident_repository.dart';
+import 'package:app_properties/features/incidents/domain/usecases/create_incident.dart';
+import 'package:app_properties/features/incidents/domain/usecases/resolve_incident.dart';
+import 'package:app_properties/features/incidents/domain/usecases/find_incidents_by_connection.dart';
+import 'package:app_properties/features/incidents/domain/usecases/find_incident_by_id.dart';
+import 'package:app_properties/features/incidents/domain/usecases/find_incidents.dart';
+import 'package:app_properties/features/incidents/domain/usecases/find_incident_categories.dart';
+import 'package:app_properties/features/incidents/presentation/cubit/incident_cubit.dart';
+import 'package:app_properties/features/public/presentation/cubit/public_incidents_map_cubit.dart';
+
 import 'package:http/http.dart' as http;
+
+// === Reading Feature ===
+import 'package:app_properties/features/reading/data/datasources/remote_reading_data_source.dart';
+import 'package:app_properties/features/reading/domain/repositories/reading_repository.dart';
+import 'package:app_properties/features/reading/data/repositories/reading_repository_impl.dart';
+import 'package:app_properties/features/reading/domain/usecases/get_reading_info.dart';
+import 'package:app_properties/features/reading/domain/usecases/create_reading_usecase.dart';
+import 'package:app_properties/features/reading/presentation/scan/bloc/reading_scan_bloc.dart';
+import 'package:app_properties/features/reading/presentation/manually/blocs/reading_manually_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -100,20 +134,33 @@ Future<void> init() async {
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton<http.Client>(() => http.Client());
 
-  // ====================
-  // AUTH
-  // ====================
+  // ==========================
+  // WEBSOCKET (Global singleton)
+  // ==========================
+  final wsService = SocketIOWebSocketService();
+  // La conexión inicial (app startup) la manejaremos explícitamente
+  // si el token guardado es válido. Si no hay token, no conectamos
+  // para evitar la conexión "without authentication" en backend.
+  final savedToken = sharedPreferences.getString('auth_token');
+  if (savedToken != null && savedToken.isNotEmpty) {
+    wsService.connect(Environment.apiUrl, token: savedToken);
+  }
+  sl.registerLazySingleton<WebSocketService>(() => wsService);
+
+  // ==========================
+  // AUTH FEATURE
+  // ==========================
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(client: sl()),
+    () => AuthRemoteDataSourceImpl(client: sl(), authLocalDataSource: sl()),
   );
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       localDataSource: sl(),
       remoteDataSource: sl(),
-      networkInfo: sl(),
+      webSocketService: sl<WebSocketService>(),
     ),
   );
   sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
@@ -122,14 +169,30 @@ Future<void> init() async {
     () => CheckAuthStatusUseCase(sl()),
   );
   sl.registerLazySingleton<VerifyUserUseCase>(() => VerifyUserUseCase(sl()));
-  sl.registerFactory(
+  sl.registerLazySingleton<RefreshTokenUseCase>(
+    () => RefreshTokenUseCase(sl()),
+  );
+  sl.registerLazySingleton<LoginCubit>(
     () => LoginCubit(
       loginUseCase: sl(),
       logoutUseCase: sl(),
       checkAuthStatusUseCase: sl(),
-      verifyUserUseCase: sl(),
+      refreshTokenUseCase: sl(),
     ),
   );
+  sl.registerLazySingleton<ChangePasswordUsecase>(
+    () => ChangePasswordUsecase(repository: sl()),
+  );
+  sl.registerFactory<ChangePasswordCubit>(
+    () => ChangePasswordCubit(changePasswordUsecase: sl()),
+  );
+  /*
+  sl.registerLazySingleton<GetProfileUserUseCase>(
+    () => GetProfileUserUseCase(sl()),
+  );
+  */
+  //sl.registerFactory(() => ProfileCubit(getProfileUserUseCase: sl()));
+
 
   // ====================
   // MANUALLY
@@ -181,7 +244,10 @@ Future<void> init() async {
     () => ConnectionWithPropertiesBloc(sl<GetConnectionWithProperties>()),
   );
   sl.registerLazySingleton<RemoteConnectionDataSource>(
-    () => RemoteConnectionDataSourceImpl(sl<http.Client>(), sl<AuthLocalDataSource>()),
+    () => RemoteConnectionDataSourceImpl(
+      sl<http.Client>(),
+      sl<AuthLocalDataSource>(),
+    ),
   );
   sl.registerLazySingleton<ConnectionRepository>(
     () => ConnectionRepositoryImpl(
@@ -201,6 +267,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<DocumentExportService>(
     () => PdfDocumentExportServiceImpl(),
+  );
+  sl.registerLazySingleton<MapNavigationService>(
+    () => MapNavigationServiceImpl(),
   );
   // ====================
   // IMÁGENES DE PROPIEDAD
@@ -222,7 +291,10 @@ Future<void> init() async {
   // CARGA DE DOCUMENTOS
   // ====================
   sl.registerLazySingleton<DocumentRemoteDataSource>(
-    () => DocumentRemoteDataSourceImpl(sl<http.Client>(), sl<AuthLocalDataSource>()),
+    () => DocumentRemoteDataSourceImpl(
+      sl<http.Client>(),
+      sl<AuthLocalDataSource>(),
+    ),
   );
   sl.registerLazySingleton<DocumentRepository>(
     () => DocumentRepositoryImpl(sl<DocumentRemoteDataSource>()),
@@ -283,11 +355,24 @@ Future<void> init() async {
   // ==========================
   // UPDATE FEATURE (DATA & DOMAIN)
   // ==========================
-  sl.registerLazySingleton(() => ConnectionRemoteDataSource(client: sl(), authLocalDataSource: sl()));
-  sl.registerLazySingleton(() => CompanyRemoteDataSource(client: sl(), authLocalDataSource: sl()));
-  sl.registerLazySingleton(() => CustomerRemoteDataSource(client: sl(), authLocalDataSource: sl()));
-  sl.registerLazySingleton(() => PropertyRemoteDataSource(client: sl(), authLocalDataSource: sl()));
-  sl.registerLazySingleton(() => ObservationConnectionRemoteDataSource(client: sl(), authLocalDataSource: sl()));
+  sl.registerLazySingleton(
+    () => ConnectionRemoteDataSource(client: sl(), authLocalDataSource: sl()),
+  );
+  sl.registerLazySingleton(
+    () => CompanyRemoteDataSource(client: sl(), authLocalDataSource: sl()),
+  );
+  sl.registerLazySingleton(
+    () => CustomerRemoteDataSource(client: sl(), authLocalDataSource: sl()),
+  );
+  sl.registerLazySingleton(
+    () => PropertyRemoteDataSource(client: sl(), authLocalDataSource: sl()),
+  );
+  sl.registerLazySingleton(
+    () => ObservationConnectionRemoteDataSource(
+      client: sl(),
+      authLocalDataSource: sl(),
+    ),
+  );
 
   sl.registerLazySingleton<update_domain_repo.ConnectionRepository>(
     () => update_data_repo.ConnectionRepositoryImpl(
@@ -326,8 +411,78 @@ Future<void> init() async {
   );
 
   sl.registerLazySingleton(() => UpdateConnectionUseCase(sl()));
+  sl.registerLazySingleton(() => ChangeMeterUseCase(sl()));
   sl.registerLazySingleton(() => UpdateCompanyUseCase(sl()));
   sl.registerLazySingleton(() => UpdateCustomerUseCase(sl()));
   sl.registerLazySingleton(() => UpdatePropertyUseCase(sl()));
   sl.registerLazySingleton(() => AddObservationConnectionUseCase(sl()));
+
+  // ==========================
+  // INCIDENTS FEATURE
+  // ==========================
+  sl.registerLazySingleton<IncidentRemoteDataSource>(
+    () => IncidentRemoteDataSourceImpl(client: sl(), authLocalDataSource: sl()),
+  );
+  sl.registerLazySingleton<IncidentRepository>(
+    () => IncidentRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<CreateIncidentUseCase>(
+    () => CreateIncidentUseCase(sl()),
+  );
+  sl.registerLazySingleton<ResolveIncidentUseCase>(
+    () => ResolveIncidentUseCase(sl()),
+  );
+  sl.registerLazySingleton<FindIncidentsByConnectionUseCase>(
+    () => FindIncidentsByConnectionUseCase(sl()),
+  );
+  sl.registerLazySingleton<FindIncidentByIdUseCase>(
+    () => FindIncidentByIdUseCase(sl()),
+  );
+  sl.registerLazySingleton<FindIncidentsUseCase>(
+    () => FindIncidentsUseCase(sl()),
+  );
+  sl.registerLazySingleton<FindIncidentCategoriesUseCase>(
+    () => FindIncidentCategoriesUseCase(sl()),
+  );
+  sl.registerFactory(
+    () => IncidentCubit(
+      createIncidentUseCase: sl(),
+      resolveIncidentUseCase: sl(),
+      findIncidentsByConnectionUseCase: sl(),
+      findIncidentByIdUseCase: sl(),
+      findIncidentsUseCase: sl(),
+      findIncidentCategoriesUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(() => PublicIncidentsMapCubit(sl()));
+  sl.registerLazySingleton(() => GetIncidentDashboardKpis(sl()));
+
+  sl.registerFactory(
+    () => PublicIncidentKpisCubit(getIncidentDashboardKpisUseCase: sl()),
+  );
+
+  // ==========================
+  // READING FEATURE
+  // ==========================
+  sl.registerLazySingleton<RemoteReadingDataSource>(
+    () => RemoteReadingDataSourceImpl(
+      sl<http.Client>(),
+      sl<AuthLocalDataSource>(),
+    ),
+  );
+  sl.registerLazySingleton<ReadingRepository>(
+    () => ReadingRepositoryImpl(sl<RemoteReadingDataSource>()),
+  );
+  sl.registerLazySingleton<GetReadingInfo>(
+    () => GetReadingInfo(sl<ReadingRepository>()),
+  );
+  sl.registerLazySingleton<CreateReadingUseCase>(
+    () => CreateReadingUseCase(sl<ReadingRepository>()),
+  );
+  sl.registerFactory<ReadingScanBloc>(
+    () => ReadingScanBloc(sl<GetReadingInfo>()),
+  );
+  sl.registerFactory<ReadingManuallyBloc>(
+    () => ReadingManuallyBloc(sl<GetReadingInfo>()),
+  );
 }

@@ -1,109 +1,130 @@
 // lib/features/auth/data/repositories/auth_repository_impl.dart
+import 'package:app_properties/config/environments/environment.dart';
+import 'package:app_properties/core/services/websocket_service.dart';
+import 'package:app_properties/features/auth/domain/entities/auth_response.dart';
+import 'package:app_properties/features/auth/domain/schemas/dto/request/ChangePasswordRequest.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/rendering.dart';
 import 'package:app_properties/core/error/exception.dart';
 import 'package:app_properties/core/error/failure.dart';
 import 'package:app_properties/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app_properties/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:app_properties/features/auth/domain/entities/user.dart';
 import 'package:app_properties/features/auth/domain/entities/verify_user_result.dart';
 import 'package:app_properties/features/auth/domain/repositories/auth_repository.dart';
 
-import 'package:app_properties/core/network/network_info.dart';
-
-/// Concrete implementation of [AuthRepository].
-///
-/// Error taxonomy:
-///   [NetworkFailure]  → device offline / server unreachable (SocketException)
-///   [ServerFailure]   → server responded with an error (4xx, 5xx)
-///   [CacheFailure]    → local SharedPreferences error
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
-  final NetworkInfo networkInfo;
+  final WebSocketService webSocketService;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
-    required this.networkInfo,
+    required this.webSocketService,
   });
 
   @override
-  Future<Either<Failure, User>> login(
-    String usernameOrEmail,
+  Future<Either<Failure, AuthResponse>> login(
+    String username_or_email,
     String password,
   ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final authResponse = await remoteDataSource.login(
-          usernameOrEmail,
-          password,
+    try {
+      final authResponse = await remoteDataSource.login(
+        username_or_email,
+        password,
+      );
+      debugPrint('AuthResponse: $authResponse');
+
+      // Validar si el usuario tiene el rol permitido para usar esta aplicación móvil.
+      final hasAccess = authResponse.user.roles.any((role) {
+        final upperRole = role.name.toUpperCase();
+        return upperRole == 'SUPER ADMINISTRADOR' || upperRole == 'EMPLEADO';
+      });
+
+      if (!hasAccess) {
+        // No almacenamos el token ni sesión si no tiene el rol necesario.
+        return Left(
+          ServerFailure(
+            message:
+                'Acceso denegado. Esta aplicación es exclusiva para los usuarios internos de la EPAA-AA.',
+          ),
         );
-        debugPrint('AuthResponse: $authResponse');
-        await localDataSource.cacheToken(authResponse.accessToken);
-        await localDataSource.cacheUser(authResponse.user);
-        return Right(authResponse.user);
-      } on NetworkException catch (_) {
-        return _offlineLoginFallback(usernameOrEmail);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
       }
-    } else {
-      return _offlineLoginFallback(usernameOrEmail);
+
+      await localDataSource.cacheToken(authResponse.accessToken);
+      await localDataSource.cacheUser(authResponse.user);
+
+      webSocketService.disconnect();
+      webSocketService.connect(
+        Environment.apiUrl,
+        token: authResponse.accessToken,
+      );
+      print('✅✅✅✅✅✅ Token Repository Impl: ${authResponse.accessToken}');
+      print('✅✅✅✅✅✅ URL Repository Impl: ${Environment.apiUrl}');
+
+      return Right<Failure, AuthResponse>(authResponse);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
-  Future<Either<Failure, User>> _offlineLoginFallback(String usernameOrEmail) async {
+  @override
+  Future<Either<Failure, AuthResponse>> refreshToken(
+    String refreshToken,
+  ) async {
     try {
-      final cachedUser = await localDataSource.getUser();
-      final cachedToken = await localDataSource.getToken();
-      
-      if (cachedUser != null && cachedToken != null && cachedToken.isNotEmpty) {
-        final entered = usernameOrEmail.trim().toLowerCase();
-        final cachedName = cachedUser.username.trim().toLowerCase();
-        final cachedEmail = cachedUser.email?.trim().toLowerCase() ?? '';
-        
-        if (entered == cachedName || entered == cachedEmail) {
-          return Right(cachedUser);
-        } else {
-          return Left(CacheFailure(
-            message: 'Las credenciales no coinciden con la última sesión iniciada en este dispositivo.',
-          ));
-        }
-      }
-      return Left(CacheFailure(
-        message: 'No hay ninguna sesión guardada en el dispositivo para iniciar de modo offline.',
-      ));
+      final authResponse = await remoteDataSource.refreshToken(refreshToken);
+      debugPrint('RefreshTokenResponse: $authResponse');
+
+      await localDataSource.cacheToken(authResponse.accessToken);
+      await localDataSource.cacheUser(authResponse.user);
+
+      // Update WebSocket with new token
+      webSocketService.disconnect();
+      webSocketService.connect(
+        Environment.apiUrl,
+        token: authResponse.accessToken,
+      );
+
+      return Right<Failure, AuthResponse>(authResponse);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
     } catch (e) {
-      return Left(CacheFailure(message: 'Error en el inicio de sesión local: $e'));
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, void>> logout() async {
+    webSocketService.disconnect();
+
     try {
       await remoteDataSource.logout();
     } catch (_) {
-      // Ignore remote logout failure — local cleanup always runs
+      // Ignore remote logout failure
     }
     try {
       await localDataSource.clearToken();
       await localDataSource.clearUser();
       return const Right(null);
     } catch (_) {
-      return Left(CacheFailure(message: 'Could not complete logout'));
+      return Left(CacheFailure(message: 'Could not safe logout'));
     }
   }
 
   @override
-  Future<Either<Failure, User>> checkAuthStatus() async {
+  Future<Either<Failure, AuthResponse>> checkAuthStatus() async {
     try {
       final token = await localDataSource.getToken();
-      final user = await localDataSource.getUser();
-      if (token != null && token.isNotEmpty && user != null) {
-        return Right(user);
+      final authResponse = await localDataSource.getAuthResponse();
+      if (token != null && token.isNotEmpty && authResponse != null) {
+        return Right<Failure, AuthResponse>(authResponse);
       }
       return Left(CacheFailure(message: 'No active session'));
     } catch (_) {
@@ -117,7 +138,6 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       final result = await remoteDataSource.verifyUser(usernameOrEmail);
-      // Treat inactive accounts as non-existent for security
       if (!result.exists || result.isActive == false) {
         return Right(
           VerifyUserResult(
@@ -133,6 +153,23 @@ class AuthRepositoryImpl implements AuthRepository {
     } on NetworkException catch (e) {
       // Device is offline — propagate as NetworkFailure so the cubit
       // can keep the session alive instead of clearing it.
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> changePassword(
+    String userId,
+    ChangePasswordRequest request,
+  ) async {
+    try {
+      await remoteDataSource.changePassword(userId, request);
+      return Right(null);
+    } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.code));

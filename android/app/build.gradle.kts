@@ -52,12 +52,12 @@ android {
 
     flavorDimensions += "app"
     productFlavors {
-        create("dev") {
+        create("develop") {
             dimension = "app"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
             resValue("string", "app_name", "Property App DEV")
-            resValue("string", "google_maps_key", googleMapsApiKey("dev"))
+            resValue("string", "google_maps_key", googleMapsApiKey("develop"))
         }
         create("prod") {
             dimension = "app"
@@ -88,8 +88,7 @@ android {
 }
 
 fun googleMapsApiKey(flavor: String): String {
-    val fileName = if (flavor == "dev") ".env.dev" else ".env"
-    // 3. MEJORA: Ruta más robusta para encontrar el .env en la raíz de Flutter
+    val fileName = if (flavor == "develop") ".env.dev" else ".env.production"
     val envFile = project.rootProject.file("../$fileName")
 
     if (!envFile.exists()) {
@@ -101,11 +100,18 @@ fun googleMapsApiKey(flavor: String): String {
         val props = Properties()
         envFile.inputStream().use { props.load(it) }
         val key = props.getProperty("GOOGLE_MAPS_API_KEY")
-        if (key.isNullOrBlank()) "MISSING_KEY" else key.trim()
+        if (key.isNullOrBlank()) {
+            println("❌ Warning: GOOGLE_MAPS_API_KEY vacía o no encontrada en $fileName")
+            "MISSING_KEY"
+        } else {
+            key.trim()
+        }
     } catch (e: Exception) {
+        println("❌ Error al leer $fileName: ${e.message}")
         "MISSING_KEY"
     }
 }
+
 
 flutter {
     source = "../.."

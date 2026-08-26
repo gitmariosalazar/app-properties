@@ -184,7 +184,7 @@ class ConnectionDetailsSheet extends StatelessWidget {
                     ),
                     ReadingsHistoryTable(
                       readings: connection.lastReadings,
-                      limit: 2,
+                      limit: 5,
                     ),
 
                     const SizedBox(height: 20),

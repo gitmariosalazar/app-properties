@@ -1,31 +1,39 @@
 {
   "version": "0.2.0",
   "configurations": [
+    // Produccion
     {
-      "name": "Flutter (Dev)",
+      "name": "Flutter (Prod Debug)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "debug",
-      "args": [
-        "--flavor",
-        "dev",
-        "--dart-define",
-        "FLAVOR=dev"
-      ]
+      "args": ["--flavor", "prod", "--dart-define", "FLAVOR=prod"]
     },
     {
-      "name": "Flutter (Prod)",
+      "name": "Flutter (Prod Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "args": ["--flavor", "prod", "--dart-define", "FLAVOR=prod"]
+    },
+    // Desarrollo
+    {
+      "name": "Flutter (Develop Debug)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "debug",
-      "args": [
-        "--flavor",
-        "prod",
-        "--dart-define",
-        "FLAVOR=prod"
-      ]
+      "args": ["--flavor", "develop", "--dart-define", "FLAVOR=develop"]
+    },
+    {
+      "name": "Flutter (Develop Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "args": ["--flavor", "develop", "--dart-define", "FLAVOR=develop"]
     }
   ]
 }

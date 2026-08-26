@@ -18,8 +18,7 @@ String? _toStringOrNull(dynamic value) {
 /// Convierte int, String → String (nunca null)
 String _toStringNonNull(dynamic value) {
   if (value == null) {
-    // Puedes cambiar por '' si prefieres valor por defecto
-    throw ArgumentError('Value cannot be null for required ID field');
+    return '';
   }
   return value.toString();
 }
@@ -108,7 +107,7 @@ export interface LastReadingResponse {
 
 @JsonSerializable(explicitToJson: true)
 class LastReading {
-  @JsonKey(name: 'cadastralKey')
+  @JsonKey(name: 'cadastralKey', fromJson: _toStringNonNull)
   final String cadastralKey;
 
   @JsonKey(name: 'readingDate')
@@ -207,7 +206,7 @@ class Person {
 
 @JsonSerializable(explicitToJson: true)
 class Company {
-  @JsonKey(name: 'ruc')
+  @JsonKey(name: 'ruc', fromJson: _toStringNonNull)
   final String ruc;
 
   @JsonKey(name: 'address')
@@ -216,7 +215,7 @@ class Company {
   @JsonKey(name: 'country')
   final String? country;
 
-  @JsonKey(name: 'clientId')
+  @JsonKey(name: 'clientId', fromJson: _toStringNonNull)
   final String clientId;
 
   @JsonKey(name: 'parishId', fromJson: _toStringOrNull)
@@ -260,19 +259,19 @@ class Property {
   @JsonKey(name: 'propertyId', fromJson: _toStringNonNull)
   final String propertyId;
 
-  @JsonKey(name: 'propertySector')
+  @JsonKey(name: 'propertySector', fromJson: _toStringNonNull)
   final String propertySector;
 
   @JsonKey(name: 'propertyTypeId', fromJson: _toIntOrNull)
   final int? propertyTypeId;
 
-  @JsonKey(name: 'propertyTypeName')
+  @JsonKey(name: 'propertyTypeName', fromJson: _toStringNonNull)
   final String propertyTypeName;
 
-  @JsonKey(name: 'propertyAddress')
+  @JsonKey(name: 'propertyAddress', fromJson: _toStringNonNull)
   final String propertyAddress;
 
-  @JsonKey(name: 'propertyAlleyway')
+  @JsonKey(name: 'propertyAlleyway', fromJson: _toStringNonNull)
   final String propertyAlleyway;
 
   @JsonKey(name: 'propertyAltitude', fromJson: _toDoubleOrNull)
@@ -287,7 +286,7 @@ class Property {
   @JsonKey(name: 'propertyCoordinates')
   final String? propertyCoordinates;
 
-  @JsonKey(name: 'propertyCadastralKey')
+  @JsonKey(name: 'propertyCadastralKey', fromJson: _toStringNonNull)
   final String propertyCadastralKey;
 
   @JsonKey(name: 'propertyGeometricZone')
@@ -318,13 +317,13 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionId', fromJson: _toStringNonNull)
   final String connectionId;
 
-  @JsonKey(name: 'clientId')
+  @JsonKey(name: 'clientId', fromJson: _toStringNonNull)
   final String clientId;
 
   @JsonKey(name: 'connectionRateId', fromJson: _toIntOrNull)
   final int? connectionRateId;
 
-  @JsonKey(name: 'connectionRateName')
+  @JsonKey(name: 'connectionRateName', fromJson: _toStringNonNull)
   final String connectionRateName;
 
   @JsonKey(name: 'connectionMeterNumber')
@@ -336,7 +335,7 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionAccount', fromJson: _toIntOrNull)
   final int? connectionAccount;
 
-  @JsonKey(name: 'connectionCadastralKey')
+  @JsonKey(name: 'connectionCadastralKey', fromJson: _toStringNonNull)
   final String connectionCadastralKey;
 
   @JsonKey(name: 'connectionContractNumber', fromJson: _toStringOrNull)
@@ -354,7 +353,7 @@ class ConnectionWithPropertiesResponse {
   @JsonKey(name: 'connectionIsReadable', fromJson: _toBoolOrNull)
   final bool? connectionIsReadable;
 
-  @JsonKey(name: 'connectionAddress')
+  @JsonKey(name: 'connectionAddress', fromJson: _toStringNonNull)
   final String connectionAddress;
 
   @JsonKey(name: 'connectionInstallationDate')

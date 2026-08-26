@@ -1,8 +1,12 @@
+import 'package:app_properties/features/properties/form/update/data/models/dto/request/change_meter_request.dart';
+
 abstract class ConnectionRepository {
   Future<void> updateConnection({
     required String connectionId,
     required UpdateConnectionParams params,
   });
+
+  Future<void> changeMeter(ChangeMeterRequest request);
 }
 
 class UpdateConnectionParams {

@@ -17,7 +17,8 @@ import '../widgets/search_empty_view.dart';
 import '../widgets/connection_result_card.dart';
 
 class SearchConnectionPage extends StatefulWidget {
-  const SearchConnectionPage({super.key});
+  final String mode;
+  const SearchConnectionPage({super.key, this.mode = 'update-form'});
 
   @override
   State<SearchConnectionPage> createState() => _SearchConnectionPageState();
@@ -190,45 +191,58 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
         final item = filtered[index];
         return ConnectionResultCard(
           connection: item,
-          onTap: () async {
-            setState(() {
-              _isLoadingDetails = true;
-            });
-            try {
-              final fetchUseCase = di.sl<GetConnectionWithProperties>();
-              final fullEntity = await fetchUseCase(
-                item.connectionCadastralKey,
-              );
-
-              if (context.mounted) {
-                setState(() {
-                  _isLoadingDetails = false;
-                });
-                context.push(
-                  '/update-form',
-                  extra: {'connection': fullEntity, 'mode': 'search'},
-                );
-              }
-            } catch (e) {
-              if (context.mounted) {
-                setState(() {
-                  _isLoadingDetails = false;
-                });
-                final cs = Theme.of(context).colorScheme;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Error al cargar detalles del predio: ${e.toString().replaceAll('Exception: ', '')}',
-                    ),
-                    backgroundColor: cs.error,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            }
-          },
+          onTap: () => _handleCardAction(context, item, 'update-form'),
+          onUpdateMeterTap: () =>
+              _handleCardAction(context, item, 'update-meter-number-form'),
         );
       },
     );
+  }
+
+  Future<void> _handleCardAction(
+    BuildContext context,
+    ConnectionEntity item,
+    String route,
+  ) async {
+    setState(() {
+      _isLoadingDetails = true;
+    });
+    try {
+      final fetchUseCase = di.sl<GetConnectionWithProperties>();
+      final fullEntity = await fetchUseCase(item.connectionCadastralKey);
+
+      if (context.mounted) {
+        setState(() {
+          _isLoadingDetails = false;
+        });
+        if (route == 'update-meter-number-form') {
+          context.push(
+            '/update-meter-number-form',
+            extra: {'connection': fullEntity},
+          );
+        } else {
+          context.push(
+            '/update-form',
+            extra: {'connection': fullEntity, 'mode': 'search'},
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        setState(() {
+          _isLoadingDetails = false;
+        });
+        final cs = Theme.of(context).colorScheme;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al cargar detalles del predio: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: cs.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }

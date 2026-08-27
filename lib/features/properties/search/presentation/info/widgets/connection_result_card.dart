@@ -12,11 +12,13 @@ import 'connection_details_sheet.dart';
 class ConnectionResultCard extends StatelessWidget {
   final ConnectionEntity connection;
   final VoidCallback onTap;
+  final VoidCallback? onUpdateMeterTap;
 
   const ConnectionResultCard({
     super.key,
     required this.connection,
     required this.onTap,
+    this.onUpdateMeterTap,
   });
 
   @override
@@ -194,107 +196,127 @@ class ConnectionResultCard extends StatelessWidget {
                       ],
                     ),
                   ],
-                  // Actions (Edit and View Details, Export to PDF)
+                  // Actions (Edit, Update Meter, View Details, Export to PDF, Report)
                   const SizedBox(height: 12),
                   const Divider(height: 1, thickness: 0.5),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.start,
                     children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: onTap,
-                          icon: const Icon(Icons.edit, size: 15),
-                          label: const Text('Editar'),
+                      ElevatedButton.icon(
+                        onPressed: onTap,
+                        icon: const Icon(Icons.edit, size: 15),
+                        label: const Text('Editar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cs.primary.withValues(alpha: 0.2),
+                          foregroundColor: cs.primary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      if (onUpdateMeterTap != null)
+                        ElevatedButton.icon(
+                          onPressed: onUpdateMeterTap,
+                          icon: const Icon(Icons.speed_rounded, size: 15),
+                          label: const Text('Medidor'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.primary.withValues(alpha: 0.2),
-                            foregroundColor: cs.primary,
+                            backgroundColor: cs.tertiaryContainer,
+                            foregroundColor: cs.onTertiaryContainer,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 12,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            barrierColor: Colors.black.withValues(alpha: 0.5),
+                            builder: (context) =>
+                                ConnectionDetailsSheet(connection: connection),
+                          );
+                        },
+                        icon: const Icon(Icons.visibility, size: 15),
+                        label: const Text('Detalle'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cs.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              barrierColor: Colors.black.withValues(alpha: 0.5),
-                              builder: (context) => ConnectionDetailsSheet(
-                                connection: connection,
-                              ),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            final exportService = di
+                                .sl<DocumentExportService>();
+                            await exportService.exportConnectionActa(
+                              connection,
                             );
-                          },
-                          icon: const Icon(Icons.visibility, size: 15),
-                          label: const Text('Detalle'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            try {
-                              final exportService = di
-                                  .sl<DocumentExportService>();
-                              await exportService.exportConnectionActa(
-                                connection,
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error al exportar acta: $e'),
+                                  backgroundColor: Colors.red.shade800,
+                                ),
                               );
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al exportar acta: $e'),
-                                    backgroundColor: Colors.red.shade800,
-                                  ),
-                                );
-                              }
                             }
-                          },
-                          icon: const Icon(Icons.download, size: 15),
-                          label: const Text('Acta'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.secondary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          }
+                        },
+                        icon: const Icon(Icons.download, size: 15),
+                        label: const Text('Acta'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cs.secondary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
-                      // Report button
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.push(
-                            '/create-incident',
-                            extra: connection.connectionId,
+                      ElevatedButton.icon(
+                        onPressed: () => context.push(
+                          '/create-incident',
+                          extra: connection.connectionId,
+                        ),
+                        icon: const Icon(Icons.report, size: 15),
+                        label: const Text('Reportar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cs.tertiary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 12,
                           ),
-                          icon: const Icon(Icons.report, size: 15),
-                          label: const Text('Reportar'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.tertiary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),

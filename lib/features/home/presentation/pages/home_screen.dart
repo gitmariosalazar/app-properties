@@ -188,7 +188,10 @@ class HomeScreen extends StatelessWidget {
                     subtitle:
                         'Busca y accede a un predio mediante su código de conexión o número de predio para actualizar el número de medidor',
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF5E35B1), Color(0xFF7C4DFF)],
+                      colors: [
+                        Color.fromARGB(255, 14, 114, 166),
+                        Color.fromARGB(255, 107, 161, 200),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

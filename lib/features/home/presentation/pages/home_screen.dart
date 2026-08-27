@@ -181,6 +181,19 @@ class HomeScreen extends StatelessWidget {
                     ),
                     onTap: () => context.push('/manually-entry-properties'),
                   ),
+                  const SizedBox(height: 12),
+                  _ActionCard(
+                    icon: Icons.edit_note_rounded,
+                    title: 'Actualizar número de medidor',
+                    subtitle:
+                        'Busca y accede a un predio mediante su código de conexión o número de predio para actualizar el número de medidor',
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF5E35B1), Color(0xFF7C4DFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    onTap: () => context.push('/update-connection-number'),
+                  ),
                   const SizedBox(height: 24),
                   const _SectionTitle('Información de Acometidas y Medidores'),
                   const SizedBox(height: 12),

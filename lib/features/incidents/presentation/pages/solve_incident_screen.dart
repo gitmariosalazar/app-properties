@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:app_properties/components/widgets/mic_suffix_button.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:app_properties/core/theme/app_colors.dart';
@@ -166,6 +167,7 @@ class _SolveIncidentScreenState extends State<SolveIncidentScreen> {
                       hintText:
                           'Ej. Se reparó la fuga de agua en la tubería principal...',
                       alignLabelWithHint: true,
+                      suffixIcon: MicSuffixButton(controller: _descriptionController),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

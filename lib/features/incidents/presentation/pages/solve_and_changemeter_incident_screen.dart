@@ -11,6 +11,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:app_properties/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:app_properties/features/auth/presentation/cubit/login_state.dart';
 import 'package:app_properties/features/incidents/domain/dto/request/resolve_incident_request.dart';
+import 'package:app_properties/features/incidents/domain/entities/incident-photo.model.dart';
+import 'package:app_properties/features/incidents/domain/entities/incident.model.dart';
+import 'package:app_properties/components/widgets/mic_suffix_button.dart';
 import 'package:app_properties/features/incidents/presentation/cubit/incident_cubit.dart';
 import 'package:app_properties/features/incidents/presentation/cubit/incident_state.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/change_meter_usecase.dart';
@@ -335,6 +338,7 @@ class _SolveAndChangeMeterIncidentScreenState
                       hintText:
                           'Ej. Se reparó la fuga de agua en la tubería principal...',
                       alignLabelWithHint: true,
+                      suffixIcon: MicSuffixButton(controller: _descriptionController),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

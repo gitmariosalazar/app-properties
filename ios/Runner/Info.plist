@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Requerimos acceso al reconocimiento de voz para poder dictar la descripción de la incidencia mediante audio.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Requerimos acceso al micrófono para grabar el audio del dictado de las incidencias.</string>
 </dict>
 </plist>

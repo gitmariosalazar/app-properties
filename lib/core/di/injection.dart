@@ -8,6 +8,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:app_properties/core/network/network_info.dart';
 import 'package:app_properties/core/network/offline_sync_manager.dart';
 import 'package:app_properties/features/properties/search/data/datasources/local_connection_datasource.dart';
+import 'package:app_properties/core/services/speech_service.dart';
 
 // === UPDATE FEATURE ===
 import 'package:app_properties/features/properties/form/update/data/datasources/company_remote_data_source.dart';
@@ -146,6 +147,11 @@ Future<void> init() async {
     wsService.connect(Environment.apiUrl, token: savedToken);
   }
   sl.registerLazySingleton<WebSocketService>(() => wsService);
+
+  // ==========================
+  // NATIVE SERVICES
+  // ==========================
+  sl.registerLazySingleton<SpeechService>(() => SpeechServiceImpl());
 
   // ==========================
   // AUTH FEATURE

@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/map_picker_screen.dart';
+import 'package:app_properties/components/widgets/mic_suffix_button.dart';
 
 import '../../domain/dto/request/create_incident_request.dart';
 import '../cubit/incident_cubit.dart';
@@ -1449,6 +1450,7 @@ class _CreateIncidentFormState extends State<CreateIncidentForm> {
         labelText: 'Descripción de la Incidencia *',
         hintText: 'Describe el problema en detalle...',
         alignLabelWithHint: true,
+        suffixIcon: MicSuffixButton(controller: _descriptionController),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: colors.surfaceContainerHighest,
@@ -1471,6 +1473,7 @@ class _CreateIncidentFormState extends State<CreateIncidentForm> {
         labelText: 'Dirección de Referencia *',
         hintText: 'Describe la dirección de referencia...',
         alignLabelWithHint: true,
+        suffixIcon: MicSuffixButton(controller: _referenceAddressController),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: colors.surfaceContainerHighest,

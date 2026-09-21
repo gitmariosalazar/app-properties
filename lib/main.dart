@@ -17,7 +17,9 @@ final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 
 // 2. Determina el flavor desde --flavor o --dart-define
-final String flavor = appFlavor ?? const String.fromEnvironment('FLAVOR', defaultValue: 'develop');
+final String flavor =
+    appFlavor ??
+    const String.fromEnvironment('FLAVOR', defaultValue: 'develop');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +81,9 @@ class MyApp extends StatelessWidget {
               darkTheme: AppTheme.dark,
               themeMode: themeMode,
               routerConfig: AppRouter.router,
+              builder: (context, child) {
+                return SafeArea(child: child!);
+              },
             );
           },
         ),

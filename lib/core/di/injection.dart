@@ -460,7 +460,7 @@ Future<void> init() async {
       findIncidentCategoriesUseCase: sl(),
     ),
   );
-  sl.registerFactory(() => PublicIncidentsMapCubit(sl()));
+  sl.registerFactory(() => PublicIncidentsMapCubit(sl(), Environment.mapConfig));
   sl.registerLazySingleton(() => GetIncidentDashboardKpis(sl()));
 
   sl.registerFactory(

@@ -24,7 +24,7 @@ class CreateIncidentForm extends StatefulWidget {
   final Future<List<Reading>> Function(String) getReadingInfo;
 
   const CreateIncidentForm({
-    super.key, 
+    super.key,
     required this.connectionId,
     required this.getReadingInfo,
   });
@@ -1221,12 +1221,17 @@ class _CreateIncidentFormState extends State<CreateIncidentForm> {
       builder: (_) => StatefulBuilder(
         builder: (context, setModalState) {
           final isShowingTypes = selectedCategory != null;
+
+          final categoriasFiltradas = _categories.where((categoria) {
+            return categoria.code != 'RUTA_LECTURA';
+          }).toList();
+
           final titleText = isShowingTypes
               ? selectedCategory!.name
               : 'Seleccionar Categoría';
           final itemsList = isShowingTypes
               ? selectedCategory!.incidentTypes
-              : _categories;
+              : categoriasFiltradas;
 
           return DraggableScrollableSheet(
             initialChildSize: 0.6,

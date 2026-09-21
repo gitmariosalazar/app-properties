@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart';
+
+import 'package:app_properties/features/maps/domain/entities/app_map_marker.dart';
+import 'package:app_properties/features/maps/domain/interfaces/map_adapter.dart';
+import 'package:app_properties/features/maps/infrastructure/factories/map_factory.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_properties/components/loaders/professional_loader.dart';
@@ -20,8 +23,14 @@ class PublicIncidentsMapScreen extends StatefulWidget {
 }
 
 class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
-  final MapController _mapController = MapController();
+  late final IMapAdapter _mapAdapter;
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _mapAdapter = MapFactory.getAdapter();
+  }
 
   // Coordenadas centrales de Antonio Ante (referencia)
   final LatLng _centerLatLng = const LatLng(0.3344, -78.2144);
@@ -31,6 +40,7 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
   String _searchQuery = '';
   bool _isListVisible = false;
   String? _selectedIncidentCode;
+  String? _selectedMapStyle;
 
   @override
   void dispose() {
@@ -58,7 +68,12 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
           }
 
           if (state is PublicIncidentsMapLoaded) {
-            return _buildMapArea(context, colors, state.incidents);
+            return _buildMapArea(
+              context,
+              colors,
+              state.incidents,
+              state.mapConfig,
+            );
           }
 
           return const SizedBox.shrink();
@@ -71,6 +86,7 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
     BuildContext context,
     ColorScheme colors,
     List<IncidentDetailRowResponse> incidents,
+    MapProviderConfig mapConfig,
   ) {
     // Filtrar incidentes por estado y búsqueda
     final filteredIncidents = incidents.where((i) {
@@ -90,7 +106,7 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
 
     return Stack(
       children: [
-        _buildMap(context, colors, filteredIncidents),
+        _buildMap(context, colors, filteredIncidents, mapConfig),
         // Top Floating Search and Filter Bar
         Positioned(
           top: MediaQuery.of(context).padding.top + 5,
@@ -163,76 +179,6 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
                     ],
                   ),
                 ),
-                // Sector Filter
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Sector:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            value: _selectedSector,
-                            hint: Text(
-                              'Todos los sectores',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colors.onSurface,
-                              ),
-                            ),
-                            isDense: true,
-                            isExpanded: true,
-                            iconSize: 20,
-                            items: [
-                              DropdownMenuItem<int>(
-                                value: null,
-                                child: Text(
-                                  'Todos los sectores',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colors.onSurface,
-                                  ),
-                                ),
-                              ),
-                              ...List.generate(40, (index) {
-                                final sectorNumber = index + 1;
-                                return DropdownMenuItem<int>(
-                                  value: sectorNumber,
-                                  child: Text(
-                                    'Sector $sectorNumber',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: colors.onSurface,
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedSector = val;
-                              });
-                              context
-                                  .read<PublicIncidentsMapCubit>()
-                                  .loadMapIncidents(sector: val);
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 // Divider
                 Divider(
                   height: 1,
@@ -271,11 +217,23 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FloatingActionButton(
+                heroTag: 'layers_btn',
+                mini: true,
+                backgroundColor: colors.surface.withValues(alpha: 0.9),
+                onPressed: () => _showLayerSelector(context, colors),
+                child: Icon(Icons.layers, color: colors.primary),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton(
                 heroTag: 'center_btn',
                 mini: true,
                 backgroundColor: colors.surface.withValues(alpha: 0.9),
                 onPressed: () {
-                  _mapController.move(_centerLatLng, 14.0);
+                  _mapAdapter.moveCamera(
+                    _centerLatLng.latitude,
+                    _centerLatLng.longitude,
+                    14.0,
+                  );
                 },
                 child: Icon(Icons.my_location, color: colors.primary),
               ),
@@ -284,12 +242,7 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
                 heroTag: 'zoom_in_btn',
                 mini: true,
                 backgroundColor: colors.surface.withValues(alpha: 0.9),
-                onPressed: () {
-                  _mapController.move(
-                    _mapController.camera.center,
-                    _mapController.camera.zoom + 1,
-                  );
-                },
+                onPressed: () => _mapAdapter.zoomIn(),
                 child: Icon(Icons.add, color: colors.onSurface),
               ),
               const SizedBox(height: 8),
@@ -297,12 +250,7 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
                 heroTag: 'zoom_out_btn',
                 mini: true,
                 backgroundColor: colors.surface.withValues(alpha: 0.9),
-                onPressed: () {
-                  _mapController.move(
-                    _mapController.camera.center,
-                    _mapController.camera.zoom - 1,
-                  );
-                },
+                onPressed: () => _mapAdapter.zoomOut(),
                 child: Icon(Icons.remove, color: colors.onSurface),
               ),
             ],
@@ -402,11 +350,9 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
                         });
                         if (incident.latitude != null &&
                             incident.longitude != null) {
-                          _mapController.move(
-                            LatLng(
-                              incident.latitude! + 0.0050,
-                              incident.longitude!,
-                            ),
+                          _mapAdapter.moveCamera(
+                            incident.latitude! + 0.0050,
+                            incident.longitude!,
                             16.0,
                           );
                         }
@@ -526,68 +472,69 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
     BuildContext context,
     ColorScheme colors,
     List<IncidentDetailRowResponse> incidents,
+    MapProviderConfig mapConfig,
   ) {
-    final unselectedMarkers = <Marker>[];
-    Marker? selectedMarker;
+    final unselectedMarkers = <AppMapMarker>[];
+    AppMapMarker? selectedMarker;
 
     for (final incident in incidents) {
       final isSelected = _selectedIncidentCode == incident.incidentCode;
 
-      final marker = Marker(
-        point: LatLng(incident.latitude!, incident.longitude!),
+      final marker = AppMapMarker(
+        id: incident.incidentCode,
+        latitude: incident.latitude!,
+        longitude: incident.longitude!,
         width: isSelected ? 140 : 50,
         height: isSelected ? 85 : 50,
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedIncidentCode = incident.incidentCode;
-            });
-            _showIncidentDetails(context, colors, incident);
-          },
-          child: isSelected
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        incident.incidentCode,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: colors.primary,
+        onTap: () {
+          setState(() {
+            _selectedIncidentCode = incident.incidentCode;
+          });
+          _showIncidentDetails(context, colors, incident);
+        },
+        widget: isSelected
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                        textAlign: TextAlign.center,
+                      ],
+                    ),
+                    child: Text(
+                      incident.incidentCode,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 4),
-                    AnimatedHeartbeatMarker(
-                      color: Colors.blueAccent,
-                      icon: Icons.location_on_rounded,
-                      size: 36,
-                    ),
-                  ],
-                )
-              : AnimatedHeartbeatMarker(
-                  color: _getStatusColor(incident.status),
-                  icon: _getCategoryIcon(incident.categoryCode),
-                  size: 24,
-                ),
-        ),
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedHeartbeatMarker(
+                    color: Colors.blueAccent,
+                    icon: Icons.location_on_rounded,
+                    size: 36,
+                  ),
+                ],
+              )
+            : AnimatedHeartbeatMarker(
+                color: _getStatusColor(incident.status),
+                icon: _getCategoryIcon(incident.categoryCode),
+                size: 24,
+              ),
       );
 
       if (isSelected) {
@@ -603,21 +550,103 @@ class _PublicIncidentsMapScreenState extends State<PublicIncidentsMapScreen> {
     ];
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tileUrl = isDark
-        ? 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-        : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: _centerLatLng,
-        initialZoom: 14.0,
-        maxZoom: 18.0,
+    String tileUrl = '';
+
+    switch (mapConfig.provider) {
+      case 'mapbox':
+        final style =
+            _selectedMapStyle ?? (isDark ? 'dark-v11' : 'streets-v12');
+        tileUrl =
+            'https://api.mapbox.com/styles/v1/mapbox/$style/tiles/{z}/{x}/{y}?access_token=${mapConfig.mapboxApiKey}';
+        break;
+      case 'stadia':
+        tileUrl = isDark
+            ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png?api_key=${mapConfig.stadiaApiKey}'
+            : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png?api_key=${mapConfig.stadiaApiKey}';
+        break;
+      case 'carto':
+      default:
+        tileUrl = isDark
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+            : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        break;
+    }
+
+    return _mapAdapter.buildMap(
+      initialLat: _centerLatLng.latitude,
+      initialLng: _centerLatLng.longitude,
+      initialZoom: 14.0,
+      markers: markers,
+      mapStyleUrl: tileUrl,
+    );
+  }
+
+  void _showLayerSelector(BuildContext context, ColorScheme colors) {
+    final styles = {
+      'Calles': 'streets-v12',
+      'Satélite': 'satellite-v9',
+      'Híbrido': 'satellite-streets-v12',
+      'Claro': 'light-v11',
+      'Oscuro': 'dark-v11',
+      'Exteriores': 'outdoors-v12',
+    };
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      children: [
-        TileLayer(urlTemplate: tileUrl, userAgentPackageName: 'com.epaa.app'),
-        MarkerLayer(markers: markers),
-      ],
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Capas del Mapa',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: colors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                ...styles.entries.map(
+                  (entry) => ListTile(
+                    leading: Icon(
+                      Icons.map,
+                      color: _selectedMapStyle == entry.value
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                    ),
+                    title: Text(
+                      entry.key,
+                      style: TextStyle(
+                        color: _selectedMapStyle == entry.value
+                            ? colors.primary
+                            : colors.onSurface,
+                        fontWeight: _selectedMapStyle == entry.value
+                            ? FontWeight.w500
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _selectedMapStyle = entry.value;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

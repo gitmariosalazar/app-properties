@@ -1002,22 +1002,26 @@ class _UpdateConnectionFormScreenState extends State<UpdateConnectionFormScreen>
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildCustomStepper(),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildClientStep(),
-                _buildConnectionStep(),
-                _buildPropertyStep(),
-              ],
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: Column(
+          children: [
+            _buildCustomStepper(),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildClientStep(),
+                  _buildConnectionStep(),
+                  _buildPropertyStep(),
+                ],
+              ),
             ),
-          ),
-          _buildBottomBar(),
-        ],
+            _buildBottomBar(),
+          ],
+        ),
       ),
     );
   }

@@ -197,50 +197,53 @@ class ConnectionResultCard extends StatelessWidget {
                     ),
                   ],
                   // Actions (Edit, Update Meter, View Details, Export to PDF, Report)
-                  const SizedBox(height: 12),
-                  const Divider(height: 1, thickness: 0.5),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.start,
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: onTap,
-                        icon: const Icon(Icons.edit, size: 15),
-                        label: const Text('Editar'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.primary.withValues(alpha: 0.2),
-                          foregroundColor: cs.primary,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      if (onUpdateMeterTap != null)
-                        ElevatedButton.icon(
-                          onPressed: onUpdateMeterTap,
-                          icon: const Icon(Icons.speed_rounded, size: 15),
-                          label: const Text('Medidor'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.tertiaryContainer,
-                            foregroundColor: cs.onTertiaryContainer,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
-                            ),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: onTap,
+                          icon: const Icon(Icons.edit, size: 16),
+                          label: const Text('Editar Datos'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: cs.primary,
+                            foregroundColor: cs.onPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
-                      ElevatedButton.icon(
+                      ),
+                      if (onUpdateMeterTap != null) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: onUpdateMeterTap,
+                            icon: const Icon(Icons.speed_rounded, size: 16),
+                            label: const Text('Medidor'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: cs.tertiaryContainer,
+                              foregroundColor: cs.onTertiaryContainer,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(height: 1, thickness: 0.5),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 0,
+                    alignment: WrapAlignment.spaceEvenly,
+                    children: [
+                      TextButton.icon(
                         onPressed: () {
                           showModalBottomSheet(
                             context: context,
@@ -251,22 +254,14 @@ class ConnectionResultCard extends StatelessWidget {
                                 ConnectionDetailsSheet(connection: connection),
                           );
                         },
-                        icon: const Icon(Icons.visibility, size: 15),
+                        icon: const Icon(Icons.visibility, size: 16),
                         label: const Text('Detalle'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: cs.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                       ),
-                      ElevatedButton.icon(
+                      TextButton.icon(
                         onPressed: () async {
                           try {
                             final exportService = di
@@ -285,39 +280,29 @@ class ConnectionResultCard extends StatelessWidget {
                             }
                           }
                         },
-                        icon: const Icon(Icons.download, size: 15),
+                        icon: const Icon(Icons.download, size: 16),
                         label: const Text('Acta'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.secondary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: cs.secondary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                       ),
-                      ElevatedButton.icon(
+                      TextButton.icon(
                         onPressed: () => context.push(
                           '/create-incident',
                           extra: connection.connectionId,
                         ),
-                        icon: const Icon(Icons.report, size: 15),
-                        label: const Text('Reportar'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.tertiary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        icon: Icon(
+                          Icons.report,
+                          size: 16,
+                          color: Colors.orange.shade800,
+                        ),
+                        label: Text(
+                          'Reportar',
+                          style: TextStyle(color: Colors.orange.shade800),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                       ),
                     ],

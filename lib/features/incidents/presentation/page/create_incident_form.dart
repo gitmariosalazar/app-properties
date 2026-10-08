@@ -226,30 +226,23 @@ class _CreateIncidentFormState extends State<CreateIncidentForm> {
     final initialLat = _latitude ?? 0.3385;
     final initialLng = _longitude ?? -78.1757;
 
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => MapPickerScreen(
           initialLat: initialLat,
           initialLng: initialLng,
-          onLocationPicked: (lat, lng) {
-            Navigator.pop(context, {'lat': lat, 'lng': lng});
+          onLocationPicked: (lat, lng) async {
+            if (!mounted) return;
+            setState(() {
+              _latitude = lat;
+              _longitude = lng;
+            });
+            await _reverseGeocode(lat, lng);
           },
         ),
       ),
     );
-
-    if (result != null && mounted) {
-      final newLat = result['lat'] as double;
-      final newLng = result['lng'] as double;
-
-      setState(() {
-        _latitude = newLat;
-        _longitude = newLng;
-      });
-
-      await _reverseGeocode(newLat, newLng);
-    }
   }
 
   Future<void> _reverseGeocode(double lat, double lng) async {

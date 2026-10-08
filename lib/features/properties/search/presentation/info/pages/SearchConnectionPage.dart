@@ -194,6 +194,8 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
           onTap: () => _handleCardAction(context, item, 'update-form'),
           onUpdateMeterTap: () =>
               _handleCardAction(context, item, 'update-meter-number-form'),
+          onLocationTap: () =>
+              _handleCardAction(context, item, 'update-location-form'),
         );
       },
     );
@@ -218,6 +220,11 @@ class _SearchConnectionPageState extends State<SearchConnectionPage> {
         if (route == 'update-meter-number-form') {
           context.push(
             '/update-meter-number-form',
+            extra: {'connection': fullEntity},
+          );
+        } else if (route == 'update-location-form') {
+          context.push(
+            '/update-location-form',
             extra: {'connection': fullEntity},
           );
         } else {

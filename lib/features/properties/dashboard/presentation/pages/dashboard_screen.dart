@@ -18,6 +18,44 @@ const _kRed = Color(0xFFEF4444); // Warm Crimson Red
 const _kBlue = Color(0xFF3B82F6); // Sleek Cobalt Blue
 const _kTeal = Color(0xFF14B8A6); // Clean Teal
 
+BoxDecoration _buildCardDecoration(BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  
+  return BoxDecoration(
+    color: isDark ? cs.surfaceContainerHigh : cs.surface,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color: isDark 
+          ? cs.outlineVariant.withValues(alpha: 0.4) 
+          : cs.outlineVariant.withValues(alpha: 0.3),
+      width: 1.0,
+    ),
+    boxShadow: isDark 
+      ? [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ] 
+      : [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.08),
+            blurRadius: 20,
+            spreadRadius: -2,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.04),
+            blurRadius: 6,
+            spreadRadius: -1,
+            offset: const Offset(0, 3),
+          ),
+        ],
+  );
+}
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -63,15 +101,9 @@ class _DashboardViewState extends State<_DashboardView> {
       backgroundColor: cs.surface,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              cs.surface,
-              cs.surfaceContainerLow.withValues(alpha: 0.8),
-              cs.surfaceContainer.withValues(alpha: 0.6),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Theme.of(context).brightness == Brightness.dark 
+              ? cs.surface 
+              : cs.surfaceContainerLowest,
         ),
         child: SafeArea(
           child: BlocBuilder<DashboardCubit, DashboardState>(
@@ -380,21 +412,7 @@ class _DashboardViewState extends State<_DashboardView> {
           // GPS Quality Card (Redesigned)
           Container(
             padding: EdgeInsets.all(context.mediumSpacing),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: cs.outlineVariant.withValues(alpha: 0.15),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.03),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+            decoration: _buildCardDecoration(context),
             child: Row(
               children: [
                 Container(
@@ -496,21 +514,7 @@ class _DashboardViewState extends State<_DashboardView> {
 
               return Container(
                 padding: EdgeInsets.all(context.mediumSpacing),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: cs.outlineVariant.withValues(alpha: 0.15),
-                    width: 1.0,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: cs.shadow.withValues(alpha: 0.03),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
+                decoration: _buildCardDecoration(context),
                 child: Column(
                   children: [
                     Row(
@@ -712,21 +716,7 @@ class _DashboardViewState extends State<_DashboardView> {
           // Estado de Red Card
           Container(
             padding: EdgeInsets.all(context.mediumSpacing),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: cs.outlineVariant.withValues(alpha: 0.15),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.03),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
+            decoration: _buildCardDecoration(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -832,21 +822,7 @@ class _DashboardViewState extends State<_DashboardView> {
             // Ultimos 5 dias de actividad
             Container(
               padding: EdgeInsets.all(context.mediumSpacing),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: cs.outlineVariant.withValues(alpha: 0.15),
-                  width: 1.0,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: cs.shadow.withValues(alpha: 0.03),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
+              decoration: _buildCardDecoration(context),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1064,21 +1040,7 @@ class _KpiCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(context.mediumSpacing),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.15),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: _buildCardDecoration(context),
       child: cardContent,
     );
   }
@@ -1108,21 +1070,7 @@ class _CoverageCard extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.all(context.mediumSpacing),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.15),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+      decoration: _buildCardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -1215,21 +1163,7 @@ class _DistributionListCard extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.all(context.largeSpacing),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.15),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+      decoration: _buildCardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

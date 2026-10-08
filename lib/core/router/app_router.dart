@@ -26,6 +26,7 @@ import 'package:app_properties/features/properties/search/presentation/info/page
 import 'package:app_properties/features/properties/search/presentation/info/cubit/search_connection_cubit.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/detail_page.dart';
 import 'package:app_properties/features/properties/form/presentation/screen/update_meter_number_form_screen.dart';
+import 'package:app_properties/features/properties/form/presentation/screen/update_location_form.dart';
 
 import 'package:app_properties/features/properties/search/presentation/offline/pages/offline_preload_screen.dart';
 
@@ -196,6 +197,50 @@ class AppRouter {
           }
 
           return UpdateMeterNumberFormScreen(
+            connection: connectionData,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/update-location-form',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+
+          if (extra == null ||
+              !extra.containsKey('connection') ||
+              extra['connection'] == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error: Datos de conexión no proporcionados'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              context.go('/home');
+            });
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final connectionData = extra['connection'];
+
+          if (connectionData is! ConnectionWithPropertiesEntity) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error: Tipo de datos de conexión inválido'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              context.go('/home');
+            });
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          return UpdateLocationFormScreen(
             connection: connectionData,
           );
         },

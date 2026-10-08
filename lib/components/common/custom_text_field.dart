@@ -20,6 +20,7 @@ class CustomTextField extends StatefulWidget {
   final int? minLines;
   final int? maxLines;
   final bool isTextArea;
+  final Widget? suffixIcon;
 
   const CustomTextField({
     super.key,
@@ -37,6 +38,7 @@ class CustomTextField extends StatefulWidget {
     this.minLines,
     this.maxLines,
     this.isTextArea = false,
+    this.suffixIcon,
   });
 
   @override
@@ -121,6 +123,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   color: cs.primary,
                   size: context.iconSmall,
                 ),
+          suffixIcon: widget.suffixIcon,
           filled: true,
           fillColor: widget.readOnly
               ? cs.surfaceContainerHighest.withValues(alpha: 0.5)

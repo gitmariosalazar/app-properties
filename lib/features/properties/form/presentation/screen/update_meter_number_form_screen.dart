@@ -1,14 +1,16 @@
 import 'dart:io';
+import 'package:app_properties/components/button/widget_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:app_properties/core/di/injection.dart' as di;
 import 'package:app_properties/features/properties/search/domain/entities/connection.dart';
+import 'package:app_properties/components/common/custom_text_field.dart';
 import 'package:app_properties/components/widgets/mic_suffix_button.dart';
+import 'package:app_properties/components/widgets/connection_info_card.dart';
 import 'package:app_properties/features/properties/form/update/domain/usecases/change_meter_usecase.dart';
 import 'package:app_properties/features/properties/form/update/data/models/dto/request/change_meter_request.dart'
     as cmr;
-import 'package:app_properties/components/button/widget_button.dart';
 
 class UpdateMeterNumberFormScreen extends StatefulWidget {
   final ConnectionWithPropertiesEntity connection;
@@ -191,77 +193,23 @@ class _UpdateMeterNumberFormScreenState
               ),
             ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(10.0),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título e instrucciones
                   Text(
-                    'Detalles de Acometida',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: cs.onSurface,
+                    'Datos de Acometida',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Revise la información y actualice únicamente el número de medidor.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 10),
 
                   // Tarjeta de información de solo lectura
-                  Card(
-                    elevation: 4,
-                    shadowColor: cs.shadow.withValues(alpha: 0.1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildInfoRow(
-                            context,
-                            Icons.person,
-                            'Cliente',
-                            clientName,
-                          ),
-                          const Divider(height: 24),
-                          // Cambié connectionCode por connectionCadastralKey u otro según la entidad.
-                          // La entidad usa connectionAccount / connectionCadastralKey.
-                          _buildInfoRow(
-                            context,
-                            Icons.vpn_key,
-                            'Cód. Catastral',
-                            conn.connectionCadastralKey,
-                          ),
-                          const Divider(height: 24),
-                          _buildInfoRow(
-                            context,
-                            Icons.map,
-                            'Dirección',
-                            conn.connectionAddress,
-                          ),
-                          const Divider(height: 24),
-                          _buildInfoRow(
-                            context,
-                            Icons.speed,
-                            'Medidor Actual',
-                            (conn.connectionMeterNumber?.isEmpty ?? true)
-                                ? 'Sin Medidor'
-                                : conn.connectionMeterNumber!,
-                            isHighlight: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+                  ConnectionInfoCard(connection: conn),
+                  const SizedBox(height: 10),
 
                   // Formulario
                   Form(
@@ -276,25 +224,14 @@ class _UpdateMeterNumberFormScreenState
                             color: cs.primary,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
+                        const SizedBox(height: 10),
+                        CustomTextField(
                           controller: _newMeterController,
-                          enabled: !_isSubmitting,
-                          textInputAction: TextInputAction.next,
-                          style: theme.textTheme.bodyLarge,
-                          decoration: InputDecoration(
-                            labelText: 'Ingrese el nuevo número *',
-                            hintText: 'Ej. 123456789',
-                            suffixIcon: MicSuffixButton(
-                              controller: _newMeterController,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.5,
-                            ),
+                          label: 'Ingrese el nuevo número',
+                          icon: Icons.numbers,
+                          isRequired: true,
+                          suffixIcon: MicSuffixButton(
+                            controller: _newMeterController,
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -306,96 +243,56 @@ class _UpdateMeterNumberFormScreenState
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
+                        const SizedBox(height: 10),
+                        CustomTextField(
                           controller: _descriptionController,
-                          enabled: !_isSubmitting,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: 'Observaciones',
-                            hintText: 'Ej. Motivo del cambio de medidor...',
-                            alignLabelWithHint: true,
-                            suffixIcon: MicSuffixButton(
-                              controller: _descriptionController,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.5,
-                            ),
+                          label: 'Observaciones (Motivo de cambio, etc.)',
+                          icon: Icons.notes,
+                          isTextArea: true,
+                          isRequired: false,
+                          suffixIcon: MicSuffixButton(
+                            controller: _descriptionController,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 10),
                         Text(
                           'Lecturas de Medidores',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
+                            color: cs.primary,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
+                        const SizedBox(height: 10),
+                        CustomTextField(
                           controller: _oldMeterReadingController,
-                          enabled: !_isSubmitting,
+                          label: 'Última Lectura Medidor Anterior (Opcional)',
+                          icon: Icons.history,
+                          isRequired: false,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: InputDecoration(
-                            labelText:
-                                'Última Lectura Medidor Anterior (Opcional)',
-                            hintText: 'Ej. 120.5',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
+                        const SizedBox(height: 10),
+                        CustomTextField(
                           controller: _newMeterInitialReadingController,
-                          enabled: !_isSubmitting,
+                          label: 'Lectura Inicial Medidor Nuevo (Opcional)',
+                          icon: Icons.play_circle_outline,
+                          isRequired: false,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: InputDecoration(
-                            labelText:
-                                'Lectura Inicial Medidor Nuevo (Opcional)',
-                            hintText: 'Ej. 0.0',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
+                        const SizedBox(height: 10),
+                        CustomTextField(
                           controller: _newMeterCurrentReadingController,
-                          enabled: !_isSubmitting,
+                          label: 'Lectura Actual Medidor Nuevo (Opcional)',
+                          icon: Icons.speed,
+                          isRequired: false,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: InputDecoration(
-                            labelText:
-                                'Lectura Actual Medidor Nuevo (Opcional)',
-                            hintText: 'Ej. 0.0',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 10),
                         // Photos Section
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -404,7 +301,7 @@ class _UpdateMeterNumberFormScreenState
                               'Evidencia Fotográfica',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: cs.onSurface,
+                                color: cs.primary,
                               ),
                             ),
                             Text(
@@ -416,7 +313,7 @@ class _UpdateMeterNumberFormScreenState
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         if (_images.isEmpty)
                           Container(
                             width: double.infinity,
@@ -562,53 +459,6 @@ class _UpdateMeterNumberFormScreenState
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value, {
-    bool isHighlight = false,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          size: 20,
-          color: isHighlight ? cs.tertiary : cs.primary.withValues(alpha: 0.6),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
-                  color: isHighlight
-                      ? cs.tertiary
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

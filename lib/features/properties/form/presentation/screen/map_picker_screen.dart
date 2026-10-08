@@ -119,6 +119,17 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             onTap: (latLng) {
               _updateLocation(latLng);
             },
+            onCameraMove: (position) {
+              setState(() {
+                _marker = _marker.copyWith(positionParam: position.target);
+              });
+            },
+            onCameraIdle: () {
+              setState(() {
+                _searchController.text =
+                    '${_marker.position.latitude}, ${_marker.position.longitude}';
+              });
+            },
           ),
           // Search Bar Overlay
           Positioned(

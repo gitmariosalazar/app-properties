@@ -13,12 +13,14 @@ class ConnectionResultCard extends StatelessWidget {
   final ConnectionEntity connection;
   final VoidCallback onTap;
   final VoidCallback? onUpdateMeterTap;
+  final VoidCallback? onLocationTap;
 
   const ConnectionResultCard({
     super.key,
     required this.connection,
     required this.onTap,
     this.onUpdateMeterTap,
+    this.onLocationTap,
   });
 
   @override
@@ -225,6 +227,27 @@ class ConnectionResultCard extends StatelessWidget {
                             style: FilledButton.styleFrom(
                               backgroundColor: cs.tertiaryContainer,
                               foregroundColor: cs.onTertiaryContainer,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (onLocationTap != null) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: onLocationTap,
+                            icon: const Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                            ),
+                            label: const Text('Ubicación'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: cs.primary,
+                              foregroundColor: cs.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
